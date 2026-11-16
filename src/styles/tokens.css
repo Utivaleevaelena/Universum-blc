@@ -1,0 +1,49 @@
+/* Global design tokens. Source: approved build-kit DESIGN-TOKENS.css (block-01-hero v01). */
+:root {
+  --universum-brand-blue: #143282;
+  --universum-brand-cyan: #00b4f7;
+  --universum-signal-yellow: #ffff00;
+  --universum-bg-navy: #061a2a;
+  --universum-bg-teal: #0a3038;
+  --universum-text-primary: #ffffff;
+  --universum-text-muted: #c6d5dc;
+  --universum-cargo-accent: #d96835;
+
+  --universum-font-body: Arial, Helvetica, sans-serif;
+  --universum-font-condensed: 'Arial Narrow', Arial, Helvetica, sans-serif;
+
+  --universum-content-max: 1440px;
+  --universum-copy-max: 640px;
+  --universum-gutter: clamp(20px, 5vw, 80px);
+  --universum-hero-min-desktop: 780px;
+  --universum-hero-min-mobile: 720px;
+
+  --universum-space-1: 4px;
+  --universum-space-2: 8px;
+  --universum-space-3: 12px;
+  --universum-space-4: 16px;
+  --universum-space-6: 24px;
+  --universum-space-8: 32px;
+  --universum-space-12: 48px;
+  --universum-space-16: 64px;
+
+  --universum-radius-control: 999px;
+  --universum-focus-width: 3px;
+  --universum-focus-offset: 3px;
+
+  --universum-z-background: 0;
+  --universum-z-grid: 1;
+  --universum-z-media: 2;
+  --universum-z-route: 3;
+  --universum-z-content: 4;
+  --universum-z-header: 5;
+
+  --universum-duration-ui: 200ms;
+  --universum-duration-route-desktop: 1300ms;
+  --universum-duration-route-mobile: 800ms;
+  --universum-node-stagger: 160ms;
+  --universum-ease-route: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Breakpoints (documentation; media queries below use the literal values):
+     mobile < 768px, tablet 768–1199px, desktop >= 1200px. */
+}

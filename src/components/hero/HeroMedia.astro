@@ -1,0 +1,101 @@
+---
+import sea from '../../assets/hero/hero-sea-ship-v01.webp';
+import road from '../../assets/hero/hero-road-truck-v01.webp';
+import air from '../../assets/hero/hero-air-aircraft-v01.webp';
+
+// Route geometry lives in a 1440 × 810 stage (the approved 16:9 reference scaled
+// to 1440 px). The wide SVG shows the whole stage; the media SVG shows only the
+// right-hand media box (x ≥ 637).
+const routePath =
+  'M383 608 C430 596 510 572 586 564 C650 556 700 520 740 490 C765 472 790 466 805 468 ' +
+  'C850 474 890 505 940 504 C990 503 1030 468 1071 468 C1120 470 1150 494 1180 496 ' +
+  'C1230 494 1270 468 1310 468 C1360 470 1400 488 1440 491';
+
+const bands = [
+  { key: 'sea', img: sea },
+  { key: 'road', img: road },
+  { key: 'air', img: air },
+];
+
+// `--t` is the share of the highlight pass after which each node switches on
+// (the signal travels right → left: air, road, sea, CTA).
+const wideNodes = [
+  { cls: 'air', x: 1310, y: 468, t: 0.12 },
+  { cls: 'road', x: 1071, y: 468, t: 0.35 },
+  { cls: 'sea', x: 805, y: 468, t: 0.57 },
+  { cls: 'cta', x: 383, y: 608, t: 1 },
+];
+const mediaNodes = [
+  { cls: 'air', x: 1310, y: 468, t: 0.2 },
+  { cls: 'road', x: 1071, y: 468, t: 0.5 },
+  { cls: 'sea', x: 805, y: 468, t: 0.85 },
+];
+
+// Mobile: vertical route through three stacked bands (air at the bottom, the
+// signal travels up towards the CTA above the stack).
+const stackPath =
+  'M50 600 C50 560 70 540 50 500 C30 460 30 440 50 300 C70 160 70 140 50 100 C40 70 50 40 50 0';
+const stackNodes = [
+  { cls: 'air', top: '83.3%', t: 0.17 },
+  { cls: 'road', top: '50%', t: 0.5 },
+  { cls: 'sea', top: '16.7%', t: 0.83 },
+  { cls: 'end', top: '0%', t: 1 },
+];
+---
+
+<div class="hero__media" aria-hidden="true">
+  <div class="hero__bands">
+    {
+      bands.map(({ key, img }) => (
+        <div class={`band band--${key}`}>
+          <img
+            class="band__img"
+            src={img.src}
+            width={img.width}
+            height={img.height}
+            alt=""
+            decoding="async"
+            fetchpriority={key === 'sea' ? 'high' : undefined}
+          />
+        </div>
+      ))
+    }
+  </div>
+
+  <svg class="route route--media" viewBox="637 0 803 810" focusable="false">
+    <path class="route__muted" d={routePath} pathLength="100"></path>
+    <path class="route__glow" d={routePath} pathLength="100"></path>
+    {
+      mediaNodes.map((n) => (
+        <g class={`node node--${n.cls}`} style={`--t:${n.t}`}>
+          <circle class="node__core" cx={n.x} cy={n.y} r="9"></circle>
+        </g>
+      ))
+    }
+  </svg>
+
+  <div class="hero__stack-route">
+    <svg class="route route--stack" viewBox="0 0 100 600" preserveAspectRatio="none" focusable="false">
+      <path class="route__muted" d={stackPath} pathLength="100" vector-effect="non-scaling-stroke"></path>
+      <path class="route__glow" d={stackPath} pathLength="100" vector-effect="non-scaling-stroke"></path>
+    </svg>
+    {
+      stackNodes.map((n) => (
+        <span class={`node-dot node-dot--${n.cls}`} style={`top:${n.top};--t:${n.t}`}></span>
+      ))
+    }
+  </div>
+</div>
+
+<svg class="route route--wide" viewBox="0 0 1440 810" aria-hidden="true" focusable="false">
+  <path class="route__muted" d={routePath} pathLength="100"></path>
+  <path class="route__glow" d={routePath} pathLength="100"></path>
+  {
+    wideNodes.map((n) => (
+      <g class={`node node--${n.cls}`} style={`--t:${n.t}`}>
+        {n.cls === 'cta' && <circle class="node__halo" cx={n.x} cy={n.y} r="16"></circle>}
+        <circle class="node__core" cx={n.x} cy={n.y} r="9"></circle>
+      </g>
+    ))
+  }
+</svg>

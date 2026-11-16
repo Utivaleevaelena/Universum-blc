@@ -1,0 +1,60 @@
+---
+import logo from '../assets/brand/universum-logo-primary.png';
+import { content } from '../i18n/content';
+import { anchors, homePath, languageNames, locales, type Locale } from '../i18n/routes';
+import '../styles/header.css';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = content[locale];
+const navItems = [
+  { label: t.nav.howItWorks, href: anchors.howItWorks },
+  { label: t.nav.whatWeCoordinate, href: anchors.whatWeCoordinate },
+  { label: t.nav.experience, href: anchors.experience },
+];
+---
+
+<header class="site-header">
+  <a class="site-header__brand" href={homePath[locale]}>
+    <img
+      src={logo.src}
+      width={logo.width}
+      height={logo.height}
+      alt="Universum"
+      decoding="async"
+    />
+  </a>
+  <nav class="site-header__nav" aria-label={t.a11y.mainNav}>
+    <ul>
+      {
+        navItems.map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <nav class="site-header__lang" aria-label={t.a11y.languageNav}>
+    <ul>
+      {
+        locales.map((code) => (
+          <li>
+            <a
+              href={homePath[code]}
+              lang={code}
+              hreflang={code}
+              aria-label={languageNames[code]}
+              aria-current={code === locale ? 'true' : undefined}
+            >
+              <span aria-hidden="true">{code.toUpperCase()}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>

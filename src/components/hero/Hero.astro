@@ -1,0 +1,69 @@
+---
+import HeroMedia from './HeroMedia.astro';
+import { content } from '../../i18n/content';
+import { anchors, type Locale } from '../../i18n/routes';
+import '../../styles/hero.css';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = content[locale];
+---
+
+<section
+  class="hero"
+  id="hero"
+  aria-labelledby="hero-title"
+  data-route="idle"
+  data-content-status={t.status}
+>
+  <div class="hero__stage">
+    <div class="hero__copy">
+      <p class="hero__eyebrow">{t.eyebrow}</p>
+      <h1 class="hero__title" id="hero-title">{t.title}</h1>
+      <p class="hero__body">{t.body}</p>
+    </div>
+    <div class="hero__actions">
+      <a class="hero__cta" href={anchors.shipmentForm}>{t.primaryCta}</a>
+      <a class="hero__link" href={anchors.qualifier}>{t.secondaryCta}</a>
+    </div>
+    <p class="hero__trust">{t.trustLine}</p>
+    <!-- Decorative media last in the DOM: mobile reads copy → actions → media. -->
+    <HeroMedia />
+  </div>
+</section>
+
+<script>
+  // One-shot Route Wake. Without JS (or with reduced motion) the final scene is
+  // already static; this script only arms and releases the sequence.
+  const hero = document.querySelector<HTMLElement>('#hero');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (hero && !reduce) {
+    const mobile = window.matchMedia('(max-width: 767px)').matches;
+    const total = (mobile ? 150 + 800 : 150 + 1300) + 700;
+    let timer = 0;
+    const finish = () => {
+      window.clearTimeout(timer);
+      hero.dataset.route = 'done';
+      observer.disconnect();
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (hero.dataset.route === 'idle' && entry.isIntersecting) {
+          hero.dataset.route = 'play';
+          timer = window.setTimeout(finish, total);
+        } else if (!entry.isIntersecting) {
+          // Left the viewport (fast scroll, anchor jump): settle in the final state.
+          finish();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(hero);
+  } else if (hero) {
+    hero.dataset.route = 'done';
+  }
+</script>
