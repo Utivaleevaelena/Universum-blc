@@ -1,0 +1,651 @@
+/* Block 03 — Route Mechanism. Breakpoints: mobile < 768, tablet 768–1199, desktop >= 1200.
+   Extends the global tokens (tokens.css); block tokens come from the approved
+   build-kit DESIGN-TOKENS.css. */
+
+.route-mechanism {
+  --route-mechanism-cyan: var(--universum-brand-cyan, #00b4f7);
+  --route-mechanism-route: #58e8f2;
+  --route-mechanism-route-lit: #20e4f4;
+  --route-mechanism-signal: var(--universum-signal-yellow, #ffff00);
+  --route-mechanism-ink: var(--universum-text-primary, #f7fbfc);
+  --route-mechanism-surface: #062c3b;
+  --route-mechanism-surface-deep: #041923;
+  --route-mechanism-film-border: rgb(119 230 239 / 34%);
+
+  --route-mechanism-inactive-opacity: 0.28;
+  --route-mechanism-passed-opacity: 0.68;
+  --route-mechanism-final-opacity: 0.92;
+  --route-mechanism-local-duration: 260ms;
+  --route-mechanism-node-duration: 180ms;
+  --route-mechanism-align-duration: 360ms;
+  --route-mechanism-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --route-mechanism-layer-shift: 8px; /* mobile / tablet panel shift, max 8px */
+
+  --route-mechanism-z-background: 0;
+  --route-mechanism-z-grid: 1;
+  --route-mechanism-z-film: 2;
+  --route-mechanism-z-route: 3;
+  --route-mechanism-z-node: 4;
+  --route-mechanism-z-content: 5;
+
+  /* Scroll state. Defaults are the complete final state, so no-JS, reduced
+     motion and a failed enhancement all show the finished assembly. The script
+     overrides these inline only after it initialised successfully.
+       --rs     0…5 stages reached, 6 = route finished
+       --rp     desktop block progress 0…1
+       --rfill  vertical axis fill 0…1 (tablet / mobile) */
+  --rs: 6;
+  --rp: 1;
+  --rfill: 1;
+  --fin: clamp(0, calc(var(--rs) - 5), 1);
+
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 84% 6%, var(--route-mechanism-surface) 0%, transparent 62%),
+    var(--universum-bg-navy);
+  color: var(--route-mechanism-ink);
+}
+
+/* Per-stage state (set --k = 1…5 on the element): on = reached, cur = this is
+   the current stage, lvl = brightness (inactive → passed → current, settling to
+   the soft final level when the route is finished). */
+.rk {
+  --on: clamp(0, calc(var(--rs) - var(--k) + 1), 1);
+  --cur: clamp(0, calc(1 - (var(--rs) - var(--k)) * (var(--rs) - var(--k))), 1);
+  --lvl: calc(
+    var(--route-mechanism-inactive-opacity) +
+      (var(--route-mechanism-passed-opacity) - var(--route-mechanism-inactive-opacity)) * var(--on) +
+      (1 - var(--route-mechanism-passed-opacity)) * var(--cur) +
+      (var(--route-mechanism-final-opacity) - var(--route-mechanism-passed-opacity)) * var(--fin)
+  );
+}
+
+/* ───────── Stage + copy (mobile first) ───────── */
+
+.route-mechanism__stage {
+  position: relative;
+  isolation: isolate;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 72px var(--universum-gutter) 72px;
+}
+
+.route-mechanism__copy {
+  position: relative;
+  z-index: var(--route-mechanism-z-content);
+  max-width: 36rem;
+}
+
+.route-mechanism__title {
+  position: relative;
+  margin: 0;
+  padding-left: 18px;
+  font-size: clamp(30px, 8.4vw, 40px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.route-mechanism__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.08em;
+  bottom: 0.08em;
+  width: 4px;
+  background: var(--route-mechanism-signal);
+}
+
+.route-mechanism__body {
+  margin: 18px 0 0 18px;
+  max-width: 30em;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* ───────── Stages: vertical axis (mobile / tablet) ───────── */
+
+.route-mechanism__stages {
+  --axis-x: 30px;
+  --rm-node-y: 11px; /* node centre below the top of each item; read by the script */
+  position: relative;
+  z-index: var(--route-mechanism-z-content);
+  margin: 36px 0 0;
+  padding: 40px 0 64px;
+  list-style: none;
+}
+
+.route-mechanism__stages::before,
+.route-mechanism__stages::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--axis-x) - 1.5px);
+  width: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.route-mechanism__stages::before {
+  background: rgb(0 180 247 / 0.24);
+}
+
+.route-mechanism__stages::after {
+  background: var(--route-mechanism-route-lit);
+  box-shadow: 0 0 10px rgb(32 228 244 / 0.45);
+  transform: scaleY(var(--rfill));
+  transform-origin: top;
+}
+
+.rm-item {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 34px;
+  padding-left: 72px;
+}
+
+.rm-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Node on the axis (generated, decorative). */
+.rm-item::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 8px);
+  top: calc(var(--rm-node-y) - 8px);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--route-mechanism-signal);
+  opacity: calc(0.5 + 0.5 * var(--on));
+  transform: scale(calc(0.82 + 0.18 * var(--on)));
+  box-shadow:
+    0 0 0 3px var(--universum-bg-navy),
+    0 0 0 calc(5px + 5px * var(--cur)) rgb(32 228 244 / calc(0.2 * var(--on) + 0.4 * var(--cur)));
+}
+
+/* Exit arrow below the last node. */
+.rm-item:last-child::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 9px);
+  top: calc(100% + 50px);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 14px solid var(--route-mechanism-route-lit);
+  opacity: var(--fin);
+}
+
+.rm-label {
+  position: relative;
+  display: block;
+  max-width: 20em;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* ───────── Planning panel: one approved layer group per stage ───────── */
+
+/* Narrow layouts show a crop of the layer (x 180…860 of 960 in layer units): the
+   node, its marks and the film body, at a size that stays legible. */
+.rm-panel {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 22rem);
+  margin-top: 14px;
+  aspect-ratio: 680 / 215;
+  pointer-events: none;
+  translate: 0 calc((1 - var(--on)) * var(--route-mechanism-layer-shift));
+}
+
+.rm-layer {
+  position: absolute;
+  top: 0;
+  left: calc(-180 / 680 * 100%);
+  width: calc(960 / 680 * 100%);
+  height: 100%;
+  overflow: visible;
+}
+
+/* Layer symbol styling: the approved source classes, prefixed. */
+.rm-film {
+  stroke: #77e6ef;
+  stroke-opacity: 0.34;
+  stroke-width: 1.5;
+  opacity: calc(0.55 + 0.45 * var(--on));
+}
+.rm-cyan,
+.rm-cyan-thin,
+.rm-cyan-faint {
+  fill: none;
+  stroke: var(--route-mechanism-route);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-cyan {
+  stroke-width: 5;
+}
+.rm-cyan-thin {
+  stroke-opacity: 0.64;
+  stroke-width: 2;
+}
+.rm-cyan-faint {
+  stroke-opacity: 0.28;
+  stroke-width: 2;
+}
+/* The lane baked into each layer is a faint rail; the lit route is code-native. */
+.rm-rail {
+  fill: none;
+  stroke: var(--route-mechanism-route);
+  stroke-opacity: 0.3;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-mark {
+  fill: none;
+  stroke: #b5f4f7;
+  stroke-opacity: 0.78;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-fill-cyan {
+  fill: #58e8f2;
+  fill-opacity: 0.2;
+  stroke: #8fefff;
+  stroke-opacity: 0.8;
+  stroke-width: 2;
+}
+.rm-tick {
+  stroke: #d8fafc;
+  stroke-opacity: 0.52;
+  stroke-width: 1.5;
+}
+
+/* Local marks: sharpen as their stage becomes current, then stay softly active. */
+.rm-layer > g > g,
+.rm-layer > g > path:not(.rm-film, .rm-rail) {
+  opacity: var(--lvl);
+}
+.rm-rail {
+  opacity: calc(0.4 + 0.6 * var(--on));
+}
+
+/* Tablet: label left, panel right, axis on the left. */
+@media (min-width: 768px) {
+  .route-mechanism__stage {
+    padding-block: 96px 96px;
+  }
+  .route-mechanism__title {
+    font-size: clamp(40px, 5.2vw, 52px);
+  }
+  .route-mechanism__body {
+    font-size: 20px;
+  }
+  .route-mechanism__stages {
+    --axis-x: 34px;
+    margin-top: 48px;
+  }
+  .rm-item {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+    column-gap: 32px;
+    margin-bottom: 44px;
+    padding-left: 84px;
+  }
+  .rm-label {
+    font-size: 19px;
+  }
+  .rm-panel {
+    justify-self: end;
+    width: min(100%, 30rem);
+    margin-top: 0;
+  }
+}
+
+/* Low-height landscape phones / tablets: tighter, never pinned. */
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 1199px) {
+  .route-mechanism__stage {
+    padding-block: 40px 48px;
+  }
+  .route-mechanism__stages {
+    margin-top: 24px;
+    padding-block: 28px 48px;
+  }
+  .rm-item {
+    margin-bottom: 24px;
+  }
+  .rm-panel {
+    width: min(100%, 20rem);
+  }
+}
+
+/* ───────── Decorative scene ───────── */
+
+.route-mechanism__scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.route-mechanism__scene picture {
+  display: contents;
+}
+
+/* Vertical layouts: the environment plate fades in behind the top of the block.
+   Crop: lower-left quay of the plate, zoomed — a different frame from Qualifier. */
+.rm-bg {
+  position: absolute;
+  z-index: var(--route-mechanism-z-background);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: min(780px, 100%);
+  object-fit: cover;
+  object-position: 0 100%;
+  transform: scale(1.5);
+  transform-origin: 0 100%;
+  opacity: 0.38;
+  -webkit-mask-image: linear-gradient(#000 30%, transparent);
+  mask-image: linear-gradient(#000 30%, transparent);
+}
+
+.rm-veil,
+.rm-map,
+.rm-route {
+  display: none;
+}
+
+.rm-grid {
+  position: absolute;
+  inset: 0;
+  z-index: var(--route-mechanism-z-grid);
+  background-image:
+    linear-gradient(rgb(0 180 247 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 180 247 / 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(#000, transparent 70%);
+  mask-image: linear-gradient(#000, transparent 70%);
+}
+
+/* ───────── Desktop >= 1200px: connected 16:9 planning plane ───────── */
+
+@media (min-width: 1200px) {
+  .route-mechanism__stage {
+    container-type: inline-size;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    aspect-ratio: 1672 / 941;
+  }
+
+  .route-mechanism__copy {
+    position: absolute;
+    z-index: var(--route-mechanism-z-content);
+    left: 3.6%;
+    top: 13%;
+    width: 34%;
+    max-width: none;
+  }
+  .route-mechanism__title {
+    padding-left: 1.3cqw;
+    font-size: 3.25cqw;
+  }
+  .route-mechanism__title::before {
+    width: 0.3cqw;
+    min-width: 3px;
+  }
+  .route-mechanism__body {
+    margin: 1.7cqw 0 0 1.3cqw;
+    max-width: 24em;
+    font-size: clamp(16px, 1.55cqw, 30px);
+  }
+
+  /* One DOM serves every breakpoint: here list items are plain wrappers, and
+     labels / panels are placed in percent of the stage. */
+  .route-mechanism__stages {
+    position: static;
+    margin: 0;
+    padding: 0;
+  }
+  .route-mechanism__stages::before,
+  .route-mechanism__stages::after,
+  .rm-item::before,
+  .rm-item:last-child::after {
+    display: none;
+  }
+  .rm-item {
+    position: static;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .rm-label {
+    position: absolute;
+    z-index: var(--route-mechanism-z-content);
+    left: var(--lx);
+    top: var(--ly);
+    width: var(--lw);
+    max-width: none;
+    padding-left: 1.1cqw;
+    font-size: 1.5cqw;
+    transform: translateY(-50%);
+  }
+  .rm-label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.1em;
+    bottom: 0.1em;
+    width: 0.25cqw;
+    min-width: 3px;
+    background: var(--route-mechanism-signal);
+    opacity: calc(0.55 + 0.45 * var(--on));
+  }
+
+  .rm-panel {
+    position: absolute;
+    z-index: var(--route-mechanism-z-film);
+    left: var(--px);
+    top: var(--py);
+    width: var(--pw);
+    margin: 0;
+    overflow: visible;
+    aspect-ratio: 960 / 215;
+    /* Alignment: an unreached layer sits slightly up and right of the common plane. */
+    translate: calc((1 - var(--on)) * 1.2cqw) calc((1 - var(--on)) * -1.1cqw);
+  }
+  .rm-layer {
+    inset: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  .rm-bg {
+    height: 100%;
+    object-position: 0 100%;
+    transform: scale(1.45);
+    transform-origin: 0 100%;
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .rm-veil {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--route-mechanism-z-grid);
+    background:
+      linear-gradient(90deg, rgb(3 25 35 / 0.9) 0%, rgb(3 25 35 / 0.62) 34%, rgb(3 25 35 / 0.42) 100%),
+      linear-gradient(180deg, var(--universum-bg-navy) 0, rgb(6 26 42 / 0) 12%),
+      linear-gradient(0deg, var(--universum-bg-navy) 0, rgb(6 26 42 / 0) 10%);
+  }
+
+  .rm-grid {
+    z-index: var(--route-mechanism-z-grid);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 72%);
+    mask-image: linear-gradient(90deg, #000 0%, transparent 72%);
+    background-size: 4.3cqw 4.3cqw;
+  }
+
+  .rm-map {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--route-mechanism-z-grid);
+    width: 100%;
+    height: 100%;
+    opacity: 0.38;
+  }
+
+  .rm-route {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--route-mechanism-z-route);
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+}
+
+/* ───────── Route (desktop SVG) ───────── */
+
+.rm-route g {
+  --seg: clamp(0, calc((var(--rp) - var(--a)) / var(--w)), 1);
+}
+
+.rm-route__track,
+.rm-route__glow,
+.rm-route__lit {
+  fill: none;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+}
+.rm-route__track {
+  stroke: rgb(0 180 247 / 0.26);
+  stroke-width: 3;
+}
+.rm-route__glow,
+.rm-route__lit {
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 * (1 - var(--seg)));
+}
+.rm-route__glow {
+  stroke: rgb(32 228 244 / 0.26);
+  stroke-width: 13;
+}
+.rm-route__lit {
+  stroke: var(--route-mechanism-route-lit);
+  stroke-width: 4.5;
+}
+.rm-route__arrow {
+  fill: var(--route-mechanism-route-lit);
+  opacity: var(--fin);
+}
+
+/* Nodes: yellow core, cyan halo, soft ring on the current one. No perpetual pulse. */
+.rm-node__core {
+  fill: var(--route-mechanism-signal);
+  opacity: calc(0.5 + 0.5 * var(--on));
+  transform: scale(calc(0.8 + 0.2 * var(--on)));
+}
+.rm-node__halo {
+  fill: rgb(6 26 42 / 0.55);
+  stroke: var(--route-mechanism-route-lit);
+  stroke-width: 2.5;
+  opacity: calc(0.3 * var(--on) + 0.55 * var(--cur));
+}
+.rm-node__pulse {
+  fill: none;
+  stroke: var(--route-mechanism-signal);
+  stroke-width: 2;
+  opacity: calc(0.45 * var(--cur));
+  transform: scale(calc(0.6 + 0.4 * var(--cur)));
+}
+.rm-node circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ───────── Motion: short state transitions only (scroll scrubs the route) ───────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .route-mechanism[data-enhanced] :is(.rm-panel, .rm-film, .rm-rail) {
+    transition:
+      opacity var(--route-mechanism-align-duration) var(--route-mechanism-ease),
+      translate var(--route-mechanism-align-duration) var(--route-mechanism-ease);
+  }
+
+  .route-mechanism[data-enhanced] .rm-layer > g > g,
+  .route-mechanism[data-enhanced] .rm-layer > g > path:not(.rm-film, .rm-rail) {
+    transition: opacity var(--route-mechanism-local-duration) var(--route-mechanism-ease);
+  }
+  /* Short stagger between the local marks of one layer: 0 / 55 / 110 / 165 ms. */
+  .route-mechanism[data-enhanced] .rm-layer > g > :nth-child(3) {
+    transition-delay: 55ms;
+  }
+  .route-mechanism[data-enhanced] .rm-layer > g > :nth-child(4) {
+    transition-delay: 110ms;
+  }
+  .route-mechanism[data-enhanced] .rm-layer > g > :nth-child(5) {
+    transition-delay: 165ms;
+  }
+
+  .route-mechanism[data-enhanced] :is(.rm-node__core, .rm-node__halo, .rm-node__pulse) {
+    transition:
+      opacity var(--route-mechanism-node-duration) var(--route-mechanism-ease),
+      transform 420ms var(--route-mechanism-ease);
+  }
+
+  .route-mechanism[data-enhanced] .rm-item::before,
+  .route-mechanism[data-enhanced] .rm-label::before {
+    transition:
+      opacity var(--route-mechanism-node-duration) var(--route-mechanism-ease),
+      transform var(--route-mechanism-node-duration) var(--route-mechanism-ease),
+      box-shadow 420ms var(--route-mechanism-ease);
+  }
+
+  .route-mechanism[data-enhanced] .rm-item:last-child::after {
+    transition: opacity var(--route-mechanism-local-duration) var(--route-mechanism-ease);
+  }
+}
+
+/* Reduced motion: always the finished assembly, no transitions or shifts. */
+@media (prefers-reduced-motion: reduce) {
+  .route-mechanism {
+    --rs: 6 !important;
+    --rp: 1 !important;
+    --rfill: 1 !important;
+    --route-mechanism-layer-shift: 0px;
+    --route-mechanism-local-duration: 0ms;
+    --route-mechanism-node-duration: 0ms;
+    --route-mechanism-align-duration: 0ms;
+  }
+  .rm-panel {
+    translate: none !important;
+  }
+  .rm-node__pulse {
+    transform: none;
+  }
+}

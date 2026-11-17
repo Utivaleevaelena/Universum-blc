@@ -1,0 +1,366 @@
+---
+import { Picture } from 'astro:assets';
+import { qualifierContent } from '../../i18n/content';
+import type { Locale } from '../../i18n/routes';
+import '../../styles/qualifier.css';
+
+import environment from '../../assets/qualifier/qualifier-environment-background-v01.png';
+import oversized from '../../assets/qualifier/qualifier-oversized-cargo-v01.png';
+import sensitive from '../../assets/qualifier/qualifier-sensitive-cargo-v01.png';
+import docsRaw from '../../assets/qualifier/qualifier-customs-documents-v01.svg?raw';
+import QualifierRoute from './QualifierRoute.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = qualifierContent[locale];
+
+// Layered customs documents stay inline vector. Only the standalone-file
+// metadata (role/title/desc) is dropped; group ids are preserved for activation.
+const docsSvg = docsRaw
+  .replace(/<title[\s\S]*?<\/title>\s*/, '')
+  .replace(/<desc[\s\S]*?<\/desc>\s*/, '')
+  .replace(
+    ' role="img" aria-labelledby="title desc"',
+    ' class="q-docs" aria-hidden="true" focusable="false"',
+  );
+
+// Desktop stage geometry: the approved reference grid, 1672 × 941.
+const W = 1672;
+const H = 941;
+const labelBox = [
+  { x: 1062, y: 103, w: 190 },
+  { x: 1445, y: 258, w: 205 },
+  { x: 826, y: 475, w: 330 },
+  { x: 907, y: 630, w: 255 },
+  { x: 1455, y: 628, w: 195 },
+];
+
+// Each obstacle is a self-contained mini composition: its own viewBox in
+// reference coordinates, so the same markup scales on desktop, tablet and mobile.
+const art = {
+  oversized: { x: 640, y: 100, w: 370, h: 230, mw: 300 },
+  sensitive: { x: 1035, y: 148, w: 440, h: 440, mw: 250 },
+  detour: { x: 540, y: 370, w: 500, h: 260, mw: 300 },
+  convergence: { x: 470, y: 600, w: 390, h: 190, mw: 300 },
+  documents: { x: 1132, y: 553, w: 330, h: 307, mw: 220 },
+};
+type ArtKey = keyof typeof art;
+const artStyle = (k: ArtKey) => {
+  const a = art[k];
+  return (
+    `--x:${((a.x / W) * 100).toFixed(3)}%;--y:${((a.y / H) * 100).toFixed(3)}%;` +
+    `--w:${((a.w / W) * 100).toFixed(3)}%;--mw:${a.mw}px;aspect-ratio:${a.w}/${a.h}`
+  );
+};
+const vb = (k: ArtKey) => `${art[k].x} ${art[k].y} ${art[k].w} ${art[k].h}`;
+const imgBox = (k: ArtKey, x: number, y: number, w: number) => {
+  const a = art[k];
+  return (
+    `left:${(((x - a.x) / a.w) * 100).toFixed(2)}%;top:${(((y - a.y) / a.h) * 100).toFixed(2)}%;` +
+    `width:${((w / a.w) * 100).toFixed(2)}%`
+  );
+};
+
+const itemStyle = (i: number) => {
+  const b = labelBox[i];
+  return (
+    `--k:${i + 1};--lx:${((b.x / W) * 100).toFixed(3)}%;--ly:${((b.y / H) * 100).toFixed(3)}%;` +
+    `--lw:${((b.w / W) * 100).toFixed(3)}%`
+  );
+};
+
+// Hatch/pad geometry shared by overlays (reference coordinates).
+const footprint = 'M662 122 H976 L990 136 V250 L934 310 H662 Z';
+const detourPoly =
+  'M1015 384 H762 L665 452 V515 L565 582 V608 H748 L722 566 L700 535 L740 492 L830 428 L1015 424 Z';
+const detourEdge = 'M1015 384 H762 L665 452 V515 L565 582 V608 H748';
+const convergence = [
+  { d: 'M490 745 C600 782 760 735 836 705', dot: null },
+  { d: 'M551 634 C640 636 760 668 836 705', dot: [551, 634] },
+  { d: 'M537 719 C640 722 760 712 836 705', dot: [537, 719] },
+  { d: 'M593 678 C660 676 760 690 836 705', dot: [593, 678] },
+  { d: 'M603 751 C690 745 780 722 836 705', dot: [603, 751] },
+];
+const rings = [
+  { r: 62, cls: 'q-ring--a' },
+  { r: 96, cls: 'q-ring--b' },
+  { r: 134, cls: 'q-ring--c' },
+  { r: 176, cls: 'q-ring--d' },
+  { r: 214, cls: 'q-ring--e' },
+];
+---
+
+<section
+  class="qualifier"
+  id="qualifier"
+  aria-labelledby="qualifier-title"
+  data-content-status={t.status}
+>
+  <div class="qualifier__stage">
+    <header class="qualifier__copy">
+      <h2 class="qualifier__title" id="qualifier-title">{t.title}</h2>
+      <p class="qualifier__body">{t.body}</p>
+    </header>
+
+    <ol class="qualifier__scenarios" role="list">
+      {
+        t.scenarios.map((s, i) => (
+          <li class="q-item qk" style={itemStyle(i)} data-scenario={s.id}>
+            <span class="q-label">{s.label}</span>
+
+            {i === 0 && (
+              <div class="q-art q-art--oversized" style={artStyle('oversized')} aria-hidden="true">
+                <svg class="q-svg" viewBox={vb('oversized')} focusable="false">
+                  <path class="q-pad" d={footprint} />
+                </svg>
+                <Picture
+                  class="q-cargo"
+                  style={imgBox('oversized', 705, 148, 270)}
+                  src={oversized}
+                  alt=""
+                  widths={[480, 800, 1200]}
+                  sizes="(min-width: 1200px) 16.5vw, (min-width: 768px) 300px, 230px"
+                  formats={['avif', 'webp']}
+                  fallbackFormat="webp"
+                  quality={62}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <svg class="q-svg q-obst" viewBox={vb('oversized')} focusable="false">
+                  <path class="q-fp-glow" d={footprint} />
+                  <path class="q-fp-band" d={footprint} />
+                  <path class="q-fp-line" d={footprint} />
+                </svg>
+              </div>
+            )}
+
+            {i === 1 && (
+              <div class="q-art q-art--sensitive" style={artStyle('sensitive')} aria-hidden="true">
+                <svg class="q-svg q-obst" viewBox={vb('sensitive')} focusable="false">
+                  {rings.map((ring, n) => (
+                    <circle
+                      class={`q-ring ${ring.cls}`}
+                      style={`--n:${n}`}
+                      cx="1255"
+                      cy="368"
+                      r={ring.r}
+                    />
+                  ))}
+                  <path class="q-ticks" d="M1255 138v34M1255 564v-34M1025 368h34M1485 368h-34" />
+                </svg>
+                <Picture
+                  class="q-cargo"
+                  style={imgBox('sensitive', 1149.5, 286, 211)}
+                  src={sensitive}
+                  alt=""
+                  widths={[360, 600, 900]}
+                  sizes="(min-width: 1200px) 12.7vw, (min-width: 768px) 250px, 160px"
+                  formats={['avif', 'webp']}
+                  fallbackFormat="webp"
+                  quality={62}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            )}
+
+            {i === 2 && (
+              <div class="q-art q-art--detour" style={artStyle('detour')} aria-hidden="true">
+                <svg class="q-svg q-obst" viewBox={vb('detour')} focusable="false">
+                  <defs>
+                    <pattern
+                      id="q-hatch"
+                      width="12"
+                      height="12"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <line x1="0" y1="0" x2="0" y2="12" stroke="#e8a317" stroke-width="3" />
+                    </pattern>
+                  </defs>
+                  <path class="q-detour-fill" d={detourPoly} />
+                  <path class="q-detour-line" d={detourPoly} />
+                  <path class="q-detour-hl" d={detourEdge} pathLength="100" />
+                </svg>
+              </div>
+            )}
+
+            {i === 3 && (
+              <div
+                class="q-art q-art--convergence"
+                style={artStyle('convergence')}
+                aria-hidden="true"
+              >
+                <svg class="q-svg" viewBox={vb('convergence')} focusable="false">
+                  {convergence.map((c, n) => (
+                    <g style={`--n:${n}`}>
+                      <path class="q-conv-track" d={c.d} />
+                      <path class="q-conv-line" d={c.d} pathLength="100" />
+                      {c.dot && <circle class="q-conv-dot" cx={c.dot[0]} cy={c.dot[1]} r="5" />}
+                    </g>
+                  ))}
+                </svg>
+              </div>
+            )}
+
+            {i === 4 && (
+              <div class="q-art q-art--documents" style={artStyle('documents')} aria-hidden="true">
+                <Fragment set:html={docsSvg} />
+              </div>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+
+    <!-- Decorative desktop scene: environment, grid and the continuous route. -->
+    <div class="qualifier__scene" aria-hidden="true">
+      <Picture
+        class="q-bg"
+        src={environment}
+        alt=""
+        widths={[768, 1280, 1672]}
+        sizes="(min-width: 1200px) 100vw, 1100px"
+        formats={['avif', 'webp']}
+        fallbackFormat="webp"
+        quality={55}
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="q-veil"></div>
+      <div class="q-grid"></div>
+      <svg class="q-map" viewBox="0 0 1672 941" focusable="false">
+        <defs>
+          <pattern id="q-dots" width="9" height="9" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.7" fill="#7fd9e6" />
+          </pattern>
+          <clipPath id="q-land">
+            <path
+              d="M40 505 L95 488 L150 496 L186 520 L176 548 L150 565 L158 600 L132 628 L108 612 L96 570 L60 548 Z"
+            />
+            <path
+              d="M214 500 L262 486 L318 492 L352 514 L338 548 L346 590 L312 622 L276 606 L262 566 L232 548 Z"
+            />
+          </clipPath>
+        </defs>
+        <rect x="0" y="470" width="400" height="180" fill="url(#q-dots)" clip-path="url(#q-land)"
+        ></rect>
+      </svg>
+      <QualifierRoute />
+    </div>
+  </div>
+</section>
+
+<script>
+  // Scroll-linked route state. Native scroll only: no pinning, no timers, no
+  // continuous loop. One passive scroll + resize listener, at most one DOM write
+  // pass per animation frame, state derived from the actual position.
+  const section = document.querySelector<HTMLElement>('#qualifier');
+  const stage = section?.querySelector<HTMLElement>('.qualifier__stage') ?? null;
+  const list = section?.querySelector<HTMLElement>('.qualifier__scenarios') ?? null;
+
+  if (section && stage && list && list.children.length === 5) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const wide = window.matchMedia('(min-width: 1200px)');
+    const items = Array.from(list.children) as HTMLElement[];
+    const SEG = 0.18; // progress length of each of the five node segments
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+
+    let frame = 0;
+    let running = false;
+    let last = { step: -1, p: -1, fill: -1 };
+
+    // Map the scroll position onto 0…1 between two document offsets. The end is
+    // capped at the last reachable scroll position, so the route can still finish
+    // when the block is the last thing on the page.
+    const range = (y: number, start: number, end: number) =>
+      end > start ? clamp01((y - start) / (end - start)) : y >= start ? 1 : 0;
+
+    const compute = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const y = window.scrollY;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+      let step = 0;
+      let p = 1;
+      let fill = 1;
+
+      if (wide.matches) {
+        // Desktop: block progress. Starts when the top third reaches 75% of the
+        // viewport, ends when the bottom third reaches 25%.
+        const r = stage.getBoundingClientRect();
+        const third = r.height / 3;
+        p = range(
+          y,
+          y + r.top + third - 0.75 * vh,
+          Math.min(y + r.top + 2 * third - 0.25 * vh, maxY),
+        );
+        step = p >= 1 ? 6 : Math.min(5, Math.floor(p / SEG));
+        fill = p;
+      } else {
+        // Tablet / mobile: vertical axis. The line fills down while a reference
+        // line at 60% of the viewport moves through the list; a node lights as
+        // the line reaches it.
+        const nodeY = parseFloat(getComputedStyle(list).getPropertyValue('--q-node-y')) || 11;
+        const ref = vh * 0.6;
+        const lr = list.getBoundingClientRect();
+        fill = range(y, y + lr.top - ref, Math.min(y + lr.top + lr.height - ref, maxY));
+        let reached = 0;
+        for (const li of items) {
+          const frac = (li.getBoundingClientRect().top - lr.top + nodeY) / (lr.height || 1);
+          if (frac <= fill) reached += 1;
+        }
+        step = fill >= 1 ? 6 : Math.min(5, reached);
+        p = fill;
+      }
+
+      const pr = Math.round(p * 1000) / 1000;
+      const fr = Math.round(fill * 1000) / 1000;
+      if (step !== last.step) {
+        section.style.setProperty('--step', String(step));
+        section.dataset.step = String(step);
+      }
+      if (pr !== last.p) section.style.setProperty('--p', String(pr));
+      if (fr !== last.fill) section.style.setProperty('--q-fillr', String(fr));
+      last = { step, p: pr, fill: fr };
+    };
+
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(compute);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      compute();
+      // Enable transitions only after the first state is in place.
+      window.requestAnimationFrame(() => {
+        if (running) section.dataset.enhanced = 'true';
+      });
+    };
+
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      last = { step: -1, p: -1, fill: -1 };
+      delete section.dataset.enhanced;
+      delete section.dataset.step;
+      section.style.removeProperty('--step');
+      section.style.removeProperty('--p');
+      section.style.removeProperty('--q-fillr');
+    };
+
+    const sync = () => (reduce.matches ? stop() : start());
+    reduce.addEventListener('change', sync);
+    sync();
+  }
+</script>

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Route assembly planning layer symbols</title>
+  <desc id="desc">Five translucent technical groups for task context, constraints and timing, route logic, modes and formalities, and the agreed next step.</desc>
+  <defs>
+    <linearGradient id="film" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0E7080" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#062C3B" stop-opacity=".08"/>
+    </linearGradient>
+    <filter id="node-glow" x="-250%" y="-250%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .film { fill: url(#film); stroke: #77E6EF; stroke-opacity: .34; stroke-width: 1.5; }
+      .cyan { stroke: #58E8F2; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+      .cyan-thin { stroke: #58E8F2; stroke-opacity: .64; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .cyan-faint { stroke: #58E8F2; stroke-opacity: .28; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .mark { stroke: #B5F4F7; stroke-opacity: .78; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .fill-cyan { fill: #58E8F2; fill-opacity: .2; stroke: #8FEFF5; stroke-opacity: .8; stroke-width: 2; }
+      .node { fill: #F5D343; stroke: #FFF2A8; stroke-width: 2; }
+      .tick { stroke: #D8FAFC; stroke-opacity: .52; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <g id="layer-task-context" data-stage="01-task-context">
+    <path class="film" d="M80 88h770l95 92-154 86H80z"/>
+    <path class="cyan" d="M25 194h170c92 0 95-64 183-64h390"/>
+    <circle class="node" cx="378" cy="130" r="10"/>
+    <g id="context-cargo" transform="translate(505 105)">
+      <rect class="fill-cyan" width="116" height="56" rx="4"/>
+      <path class="mark" d="M14 14h88M14 28h88M14 42h88M30 2v52M58 2v52M86 2v52"/>
+      <path class="cyan-thin" d="M-52 28h36m142 0h42"/>
+    </g>
+    <g class="tick" opacity=".9">
+      <path d="M105 112v22M127 112v12M149 112v22M171 112v12M193 112v22"/>
+      <path d="M705 196v22M727 206v12M749 196v22M771 206v12"/>
+    </g>
+  </g>
+
+  <g id="layer-constraints-timing" data-stage="02-constraints-timing" transform="translate(116 118)">
+    <path class="film" d="M80 88h770l95 92-154 86H80z"/>
+    <path class="cyan" d="M25 194h230c54 0 88-64 155-64h358"/>
+    <circle class="node" cx="410" cy="130" r="10"/>
+    <g id="constraint-envelope" transform="translate(490 98)">
+      <rect class="fill-cyan" x="0" y="0" width="152" height="72" rx="8"/>
+      <path class="mark" d="M20 18h112M20 52h112M34 8v14M76 8v14M118 8v14"/>
+      <path class="cyan-thin" d="M-44 36H0m152 0h54"/>
+      <circle class="mark" cx="76" cy="36" r="18"/>
+      <path class="mark" d="M76 26v11l9 6"/>
+    </g>
+    <g class="tick">
+      <path d="M117 112v26M139 112v12M161 112v18M183 112v12M205 112v26"/>
+      <path d="M688 198v20M710 206v12M732 198v20"/>
+    </g>
+  </g>
+
+  <g id="layer-route-logic" data-stage="03-route-logic" transform="translate(226 236)">
+    <path class="film" d="M80 88h770l95 92-154 86H80z"/>
+    <path class="cyan" d="M25 194h218c82 0 88-64 167-64h358"/>
+    <circle class="node" cx="410" cy="130" r="10"/>
+    <g id="route-alternatives" transform="translate(452 104)">
+      <path class="cyan-faint" d="M0 28h64c62 0 82-45 150-45h72"/>
+      <path class="cyan" d="M0 28h86c58 0 80 4 134 4h66"/>
+      <path class="cyan-faint" d="M0 28h64c62 0 82 49 150 49h72"/>
+      <circle class="fill-cyan" cx="0" cy="28" r="7"/>
+      <circle class="fill-cyan" cx="286" cy="-17" r="7"/>
+      <circle class="node" cx="286" cy="32" r="9"/>
+      <circle class="fill-cyan" cx="286" cy="77" r="7"/>
+    </g>
+  </g>
+
+  <g id="layer-modes-formalities" data-stage="04-modes-formalities" transform="translate(336 354)">
+    <path class="film" d="M80 88h770l95 92-154 86H80z"/>
+    <path class="cyan" d="M25 194h242c66 0 84-64 143-64h358"/>
+    <circle class="node" cx="410" cy="130" r="10"/>
+    <g id="mode-marks" transform="translate(468 104)">
+      <path class="mark" d="M0 22h92l18 15H0zM12 8h52v14H12z"/>
+      <path class="mark" d="M140 28h80l-10-22h-44l-12 22M156 28v16m50-16v16M150 44h62"/>
+      <path class="mark" d="M262 30h74l-17-10-18-28h-12l4 28-31 10z"/>
+      <path class="cyan-thin" d="M110 29h30m80 0h42"/>
+    </g>
+    <g id="formalities-docs" transform="translate(596 154)">
+      <path class="fill-cyan" d="M0 0h68l18 18v94H0z"/>
+      <path class="mark" d="M68 0v18h18M14 42h56M14 59h44M14 76h52M14 93h36"/>
+      <path class="cyan-faint" d="M-42 56H0m86 0h46"/>
+    </g>
+  </g>
+
+  <g id="layer-agreed-next-step" data-stage="05-agreed-next-step" transform="translate(446 472)">
+    <path class="film" d="M80 88h570l95 92-154 86H80z"/>
+    <path class="cyan" d="M25 194h252c72 0 98-64 183-64h210"/>
+    <g id="final-corridor" transform="translate(460 130)">
+      <path class="cyan-faint" d="M0 0h84l54 42h52"/>
+      <path class="cyan" d="M0 0h84l54 42h96"/>
+      <path class="cyan-thin" d="M26-15h60l66 42h54"/>
+      <circle fill="#F5D343" fill-opacity=".24" filter="url(#node-glow)" cx="234" cy="42" r="24"/>
+      <circle class="node" cx="234" cy="42" r="12"/>
+    </g>
+  </g>
+</svg>

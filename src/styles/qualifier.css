@@ -1,0 +1,747 @@
+/* Block 02 — Qualifier. Breakpoints: mobile < 768, tablet 768–1199, desktop >= 1200.
+   Extends the global tokens (tokens.css); block tokens come from the approved
+   build-kit DESIGN-TOKENS.css. */
+
+.qualifier {
+  --qualifier-cyan: var(--universum-brand-cyan, #28d7e4);
+  --qualifier-route-highlight: #20e4f4;
+  --qualifier-signal: var(--universum-signal-yellow, #ffd600);
+  --qualifier-ink: var(--universum-text-primary, #f7fbfc);
+  --qualifier-surface: #062c35;
+  --qualifier-surface-deep: #031f27;
+  --qualifier-hazard: #e8a317;
+
+  --qualifier-route-width: clamp(0.125rem, 0.16vw, 0.1875rem);
+  --qualifier-inactive-opacity: 0.28;
+  --qualifier-passed-opacity: 0.68;
+  --qualifier-final-opacity: 0.92;
+  --qualifier-material-inactive: 0.6;
+  --qualifier-obstacle-scale: 1.015;
+  --qualifier-node-duration: 180ms;
+  --qualifier-obstacle-duration: 260ms;
+  --qualifier-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --qualifier-z-background: 0;
+  --qualifier-z-material: 1;
+  --qualifier-z-obstacle: 2;
+  --qualifier-z-route: 3;
+  --qualifier-z-node: 4;
+  --qualifier-z-content: 5;
+
+  /* Scroll state. Defaults are the complete final state, so no-JS, reduced
+     motion and a failed enhancement all show the finished scene. The script
+     overrides these inline only after it initialised successfully.
+       --step   0…5 nodes reached, 6 = route finished
+       --p      desktop block progress 0…1
+       --q-fillr  vertical axis fill 0…1 (tablet / mobile) */
+  --step: 6;
+  --p: 1;
+  --q-fillr: 1;
+  --fin: clamp(0, calc(var(--step) - 5), 1);
+
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 16% 12%, var(--qualifier-surface) 0%, transparent 64%),
+    var(--universum-bg-navy);
+  color: var(--qualifier-ink);
+}
+
+/* Per-scenario state (set --k = 1…5 on the element): on = reached, cur = this
+   is the current step, lvl = obstacle brightness (inactive → passed → current,
+   settling to the soft final level when the route is finished). */
+.qk {
+  --on: clamp(0, calc(var(--step) - var(--k) + 1), 1);
+  --cur: clamp(0, calc(1 - (var(--step) - var(--k)) * (var(--step) - var(--k))), 1);
+  --lvl: calc(
+    var(--qualifier-inactive-opacity) +
+      (var(--qualifier-passed-opacity) - var(--qualifier-inactive-opacity)) * var(--on) +
+      (1 - var(--qualifier-passed-opacity)) * var(--cur) +
+      (var(--qualifier-final-opacity) - var(--qualifier-passed-opacity)) * var(--fin)
+  );
+}
+
+/* ───────── Stage + copy (mobile first) ───────── */
+
+.qualifier__stage {
+  position: relative;
+  isolation: isolate;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 72px var(--universum-gutter) 72px;
+}
+
+.qualifier__copy {
+  position: relative;
+  z-index: var(--qualifier-z-content);
+  max-width: 36rem;
+}
+
+.qualifier__title {
+  position: relative;
+  margin: 0;
+  padding-left: 18px;
+  font-size: clamp(30px, 8.4vw, 40px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.qualifier__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.08em;
+  bottom: 0.08em;
+  width: 4px;
+  background: var(--qualifier-signal);
+}
+
+.qualifier__body {
+  margin: 18px 0 0 18px;
+  max-width: 30em;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* ───────── Scenarios: vertical axis (mobile / tablet) ───────── */
+
+.qualifier__scenarios {
+  --axis-x: 30px;
+  --q-node-y: 11px; /* node centre below the top of each item; read by the script */
+  position: relative;
+  z-index: var(--qualifier-z-content);
+  margin: 36px 0 0;
+  padding: 40px 0 64px;
+  list-style: none;
+}
+
+.qualifier__scenarios::before,
+.qualifier__scenarios::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--axis-x) - 1.5px);
+  width: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.qualifier__scenarios::before {
+  background: rgb(0 180 247 / 0.24);
+}
+
+.qualifier__scenarios::after {
+  background: var(--qualifier-route-highlight);
+  box-shadow: 0 0 10px rgb(32 228 244 / 0.45);
+  transform: scaleY(var(--q-fillr));
+  transform-origin: top;
+}
+
+.q-item {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 34px;
+  padding-left: 72px;
+}
+
+.q-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Node on the axis (generated, decorative). */
+.q-item::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 8px);
+  top: calc(var(--q-node-y) - 8px);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--qualifier-signal);
+  opacity: calc(0.5 + 0.5 * var(--on));
+  transform: scale(calc(0.82 + 0.18 * var(--on)));
+  box-shadow:
+    0 0 0 3px var(--universum-bg-navy),
+    0 0 0 calc(5px + 5px * var(--cur)) rgb(32 228 244 / calc(0.2 * var(--on) + 0.4 * var(--cur)));
+}
+
+/* Exit arrow below the last node. */
+.q-item:last-child::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 9px);
+  top: calc(100% + 50px);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 14px solid var(--qualifier-route-highlight);
+  opacity: var(--fin);
+}
+
+.q-label {
+  position: relative;
+  display: block;
+  max-width: 20em;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* ───────── Obstacle art: one mini composition per scenario ───────── */
+
+.q-art {
+  position: relative;
+  display: block;
+  width: min(100%, var(--mw));
+  margin-top: 14px;
+  pointer-events: none;
+}
+
+.q-art picture {
+  display: contents;
+}
+
+.q-svg,
+.q-docs {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.q-cargo {
+  position: absolute;
+  height: auto;
+  max-width: none;
+  opacity: calc(
+    var(--qualifier-material-inactive) + (1 - var(--qualifier-material-inactive)) * var(--on)
+  );
+}
+
+.q-obst {
+  transform: scale(calc(1 + (var(--qualifier-obstacle-scale) - 1) * var(--cur)));
+}
+
+/* 1 — oversized footprint */
+.q-pad {
+  fill: rgb(14 26 32 / 0.5);
+}
+.q-fp-glow {
+  fill: none;
+  stroke: var(--qualifier-hazard);
+  stroke-width: 26;
+  stroke-linejoin: round;
+  opacity: calc(0.22 * var(--cur) + 0.05 * var(--on));
+}
+.q-fp-band {
+  fill: none;
+  stroke: var(--qualifier-hazard);
+  stroke-width: 11;
+  stroke-dasharray: 6 7;
+  opacity: calc(var(--lvl) * 0.7);
+}
+.q-fp-line {
+  fill: none;
+  stroke: var(--qualifier-hazard);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  opacity: var(--lvl);
+}
+
+/* 2 — precision rings */
+.q-ring {
+  fill: none;
+  stroke: var(--qualifier-route-highlight);
+}
+.q-ring--a {
+  stroke-width: 2;
+  --ro: 0.85;
+}
+.q-ring--b {
+  stroke-width: 3.6;
+  --ro: 1;
+}
+.q-ring--c {
+  stroke-width: 2.8;
+  --ro: 0.9;
+}
+.q-ring--d {
+  stroke-width: 1.6;
+  stroke-dasharray: 7 9;
+  --ro: 0.75;
+}
+.q-ring--e {
+  stroke-width: 1.4;
+  stroke-dasharray: 2 8;
+  stroke-linecap: round;
+  --ro: 0.6;
+}
+.q-ring {
+  opacity: calc(var(--lvl) * var(--ro));
+}
+.q-ticks {
+  fill: none;
+  stroke: var(--qualifier-route-highlight);
+  stroke-width: 1.6;
+  opacity: calc(var(--lvl) * 0.6);
+}
+
+/* 3 — controlled detour */
+.q-detour-fill {
+  fill: url(#q-hatch);
+  opacity: calc(var(--lvl) * 0.6);
+}
+.q-detour-line {
+  fill: none;
+  stroke: var(--qualifier-hazard);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  opacity: var(--lvl);
+}
+.q-detour-hl {
+  fill: none;
+  stroke: var(--qualifier-route-highlight);
+  stroke-width: 4;
+  stroke-linejoin: round;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: calc(100 * (1 - var(--on)));
+  opacity: calc(0.5 * var(--on) + 0.5 * var(--cur));
+}
+
+/* 4 — convergence */
+.q-conv-track {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.12);
+  stroke-width: 1.6;
+}
+.q-conv-line {
+  fill: none;
+  stroke: var(--qualifier-route-highlight);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: calc(100 * (1 - var(--on)));
+  opacity: calc(0.55 * var(--on) + 0.45 * var(--cur));
+}
+.q-conv-dot {
+  fill: #fff;
+  opacity: calc(0.3 + 0.7 * var(--on));
+}
+
+/* 5 — layered documents (inline vector, activated back → front) */
+.q-art--documents {
+  --dl: calc(0.25 + 0.75 * var(--on));
+}
+.q-docs #doc-back-03 {
+  opacity: calc(0.28 * var(--dl));
+}
+.q-docs #doc-back-02 {
+  opacity: calc(0.42 * var(--dl));
+}
+.q-docs #doc-back-01 {
+  opacity: calc(0.58 * var(--dl));
+}
+.q-docs #doc-front {
+  opacity: calc(0.4 + 0.6 * var(--on));
+}
+.q-docs #doc-copy-lines {
+  opacity: var(--on);
+}
+.q-docs #doc-form-grid {
+  opacity: calc(0.8 * var(--on));
+}
+
+/* Tablet: label left, obstacle right, axis on the left. */
+@media (min-width: 768px) {
+  .qualifier__stage {
+    padding-block: 96px 96px;
+  }
+  .qualifier__title {
+    font-size: clamp(40px, 5.2vw, 52px);
+  }
+  .qualifier__body {
+    font-size: 20px;
+  }
+  .qualifier__scenarios {
+    --axis-x: 34px;
+    margin-top: 48px;
+  }
+  .q-item {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+    column-gap: 32px;
+    margin-bottom: 48px;
+    padding-left: 84px;
+  }
+  .q-label {
+    font-size: 19px;
+  }
+  .q-art {
+    justify-self: end;
+    width: min(100%, calc(var(--mw) * 1.25));
+    margin-top: 0;
+  }
+}
+
+/* Low-height landscape phones / tablets: tighter, never pinned. */
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 1199px) {
+  .qualifier__stage {
+    padding-block: 40px 48px;
+  }
+  .qualifier__scenarios {
+    margin-top: 24px;
+    padding-block: 28px 48px;
+  }
+  .q-item {
+    margin-bottom: 24px;
+  }
+  .q-art {
+    width: min(100%, calc(var(--mw) * 0.8));
+  }
+}
+
+/* ───────── Decorative scene ───────── */
+
+.qualifier__scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.qualifier__scene picture {
+  display: contents;
+}
+
+/* Vertical layouts: environment plate fades in behind the top of the block. */
+.q-bg {
+  position: absolute;
+  z-index: var(--qualifier-z-background);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: min(780px, 100%);
+  object-fit: cover;
+  object-position: 76% 0;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(#000 35%, transparent);
+  mask-image: linear-gradient(#000 35%, transparent);
+}
+
+.q-veil,
+.q-map,
+.q-route {
+  display: none;
+}
+
+.q-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image:
+    linear-gradient(rgb(0 180 247 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 180 247 / 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(#000, transparent 70%);
+  mask-image: linear-gradient(#000, transparent 70%);
+}
+
+/* ───────── Desktop >= 1200px: connected 16:9 diagram ───────── */
+
+@media (min-width: 1200px) {
+  .qualifier__stage {
+    container-type: inline-size;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    aspect-ratio: 1672 / 941;
+  }
+
+  .qualifier__copy {
+    position: absolute;
+    left: 5.68%;
+    top: 10.1%;
+    width: 34%;
+    max-width: none;
+  }
+  .qualifier__title {
+    padding-left: 0;
+    font-size: 3.7cqw;
+    line-height: 1.07;
+  }
+  :lang(pl) .qualifier__title {
+    font-size: 3.05cqw;
+  }
+  .qualifier__title::before {
+    left: -2.05cqw;
+    top: 0.06em;
+    bottom: auto;
+    width: max(3px, 0.36cqw);
+    height: 1.75em;
+  }
+  .qualifier__body {
+    margin: 1.7cqw 0 0;
+    max-width: 33cqw;
+    font-size: 1.65cqw;
+    line-height: 1.3;
+  }
+
+  .qualifier__scenarios {
+    position: static;
+    z-index: auto;
+    margin: 0;
+    padding: 0;
+  }
+  .qualifier__scenarios::before,
+  .qualifier__scenarios::after,
+  .q-item::before,
+  .q-item:last-child::after {
+    display: none;
+  }
+  .q-item {
+    position: static;
+    z-index: auto;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .q-label {
+    position: absolute;
+    z-index: var(--qualifier-z-content);
+    left: var(--lx);
+    top: var(--ly);
+    width: var(--lw);
+    max-width: none;
+    font-size: 1.32cqw;
+    line-height: 1.2;
+  }
+  .q-label::before {
+    content: '';
+    position: absolute;
+    left: -1.2cqw;
+    top: 0.08em;
+    bottom: 0.08em;
+    width: max(3px, 0.24cqw);
+    background: var(--qualifier-signal);
+    opacity: calc(0.4 + 0.6 * var(--on));
+  }
+
+  .q-art {
+    position: absolute;
+    z-index: var(--qualifier-z-obstacle);
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    max-width: none;
+    margin: 0;
+    justify-self: auto;
+  }
+
+  .q-bg {
+    height: 100%;
+    object-position: 50% 50%;
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .q-veil {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(90deg, rgb(3 31 39 / 0.82) 0%, rgb(3 31 39 / 0.5) 30%, rgb(3 31 39 / 0) 62%),
+      linear-gradient(180deg, var(--universum-bg-navy) 0, rgb(6 26 42 / 0) 9%);
+  }
+
+  .q-grid {
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 70%);
+    mask-image: linear-gradient(90deg, #000 0%, transparent 70%);
+    background-size: 4.3cqw 4.3cqw;
+  }
+
+  .q-map {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+  }
+
+  .q-route {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--qualifier-z-route);
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+}
+
+/* ───────── Route (desktop SVG) ───────── */
+
+.q-route g {
+  --seg: clamp(0, calc((var(--p) - var(--a)) / var(--w)), 1);
+}
+
+.q-route__track {
+  fill: none;
+  stroke: rgb(0 180 247 / 0.24);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.q-route__glow,
+.q-route__lit {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: calc(100 * (1 - var(--seg)));
+}
+
+.q-route__glow {
+  stroke: var(--qualifier-cyan);
+  stroke-width: 11;
+  opacity: calc(clamp(0, var(--seg) * 1000, 1) * 0.22);
+}
+
+.q-route__lit {
+  stroke: var(--qualifier-route-highlight);
+  stroke-width: 4.2;
+  opacity: clamp(0, calc(var(--seg) * 1000), 1);
+}
+
+.q-route__arrow {
+  fill: var(--qualifier-route-highlight);
+  opacity: clamp(0, calc((var(--p) - 0.97) * 34), 1);
+}
+
+.q-node__core {
+  fill: var(--qualifier-signal);
+  stroke: rgb(255 255 255 / 0.75);
+  stroke-width: 1.6;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(0.82 + 0.18 * var(--on)));
+  opacity: calc(0.5 + 0.5 * var(--on));
+}
+
+.q-node__halo {
+  fill: rgb(32 228 244 / 0.1);
+  stroke: var(--qualifier-route-highlight);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(0.78 + 0.1 * var(--on) + 0.12 * var(--cur)));
+  opacity: calc(0.42 * var(--on) + 0.58 * var(--cur));
+}
+
+.q-node__pulse {
+  fill: none;
+  stroke: rgb(32 228 244 / 0.5);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(0.6 + 0.4 * var(--cur)));
+  opacity: calc(0.5 * var(--cur));
+}
+
+/* ───────── Motion: short state transitions only (scroll scrubs the route) ───────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .qualifier[data-enhanced] :is(
+      .q-fp-glow,
+      .q-fp-band,
+      .q-fp-line,
+      .q-ring,
+      .q-ticks,
+      .q-detour-fill,
+      .q-detour-line,
+      .q-conv-track,
+      .q-conv-dot,
+      .q-cargo,
+      .q-docs g,
+      .q-obst
+    ) {
+    transition:
+      opacity var(--qualifier-obstacle-duration) var(--qualifier-ease),
+      transform var(--qualifier-obstacle-duration) var(--qualifier-ease);
+  }
+
+  .qualifier[data-enhanced] :is(.q-detour-hl, .q-conv-line) {
+    transition:
+      stroke-dashoffset 520ms var(--qualifier-ease),
+      opacity var(--qualifier-obstacle-duration) var(--qualifier-ease);
+  }
+  .qualifier[data-enhanced] .q-conv-line,
+  .qualifier[data-enhanced] .q-conv-dot,
+  .qualifier[data-enhanced] .q-ring {
+    transition-delay: calc(var(--n, 0) * 60ms);
+  }
+
+  .qualifier[data-enhanced] :is(.q-node__core, .q-node__halo, .q-node__pulse) {
+    transition:
+      opacity var(--qualifier-node-duration) var(--qualifier-ease),
+      transform 420ms var(--qualifier-ease);
+  }
+
+  .qualifier[data-enhanced] .q-item::before,
+  .qualifier[data-enhanced] .q-label::before {
+    transition:
+      opacity var(--qualifier-node-duration) var(--qualifier-ease),
+      transform var(--qualifier-node-duration) var(--qualifier-ease),
+      box-shadow 420ms var(--qualifier-ease);
+  }
+
+  .qualifier[data-enhanced] .q-item:last-child::after {
+    transition: opacity var(--qualifier-obstacle-duration) var(--qualifier-ease);
+  }
+
+  .qualifier[data-enhanced] .q-docs #doc-back-02 {
+    transition-delay: 70ms;
+  }
+  .qualifier[data-enhanced] .q-docs #doc-back-01 {
+    transition-delay: 140ms;
+  }
+  .qualifier[data-enhanced] .q-docs #doc-front {
+    transition-delay: 210ms;
+  }
+  .qualifier[data-enhanced] .q-docs #doc-copy-lines {
+    transition-delay: 330ms;
+  }
+  .qualifier[data-enhanced] .q-docs #doc-form-grid {
+    transition-delay: 430ms;
+  }
+}
+
+/* Reduced motion: always the finished scene, no transitions or scale. */
+@media (prefers-reduced-motion: reduce) {
+  .qualifier {
+    --step: 6 !important;
+    --p: 1 !important;
+    --q-fillr: 1 !important;
+    --qualifier-obstacle-scale: 1;
+    --qualifier-node-duration: 0ms;
+    --qualifier-obstacle-duration: 0ms;
+  }
+}

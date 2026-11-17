@@ -1,0 +1,696 @@
+/* Block 04 — Coordination Scope. Breakpoints: mobile < 768, tablet 768–1199, desktop >= 1200.
+   Extends the global tokens (tokens.css); block tokens come from the approved
+   build-kit DESIGN-TOKENS.css. */
+
+.coordination-scope {
+  --coord-scope-cyan: var(--universum-brand-cyan, #00b4f7);
+  --coord-scope-route: #20e4f4;
+  --coord-scope-signal: var(--universum-signal-yellow, #ffff00);
+  --coord-scope-ink: var(--universum-text-primary, #f7fbfc);
+  --coord-scope-muted: #b6ccd2;
+  --coord-scope-surface: #062c3b;
+  --coord-scope-surface-deep: #041923;
+  --coord-scope-frame: rgb(164 224 231 / 54%);
+  --coord-scope-frame-active: rgb(210 248 250 / 82%);
+
+  --coord-scope-inactive-opacity: 0.28;
+  --coord-scope-complete-opacity: 0.82;
+  --coord-scope-active-opacity: 1;
+  --coord-scope-local-duration: 260ms;
+  --coord-scope-node-duration: 180ms;
+  --coord-scope-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --coord-scope-z-background: 0;
+  --coord-scope-z-overlay: 1;
+  --coord-scope-z-frame: 2;
+  --coord-scope-z-route: 3;
+  --coord-scope-z-node: 4;
+  --coord-scope-z-content: 5;
+
+  /* Scroll state. Defaults are the complete final state, so no-JS, reduced motion
+     and a failed enhancement all show the assembled scene. The script overrides
+     these inline only after it initialised successfully.
+       --rs  0…4 workstreams started (local marks clear)
+       --rn  0…4 workstreams completed (handoff node lit)
+       --rp  block progress 0…1 (desktop) / spine fill 0…1 (tablet, mobile) */
+  --rs: 4;
+  --rn: 4;
+  --rp: 1;
+  --dst-at: 0.88;
+  --dst: clamp(0, calc((var(--rp) - var(--dst-at)) * 1000), 1);
+  --entry: clamp(0, calc((var(--rp) - 0.12) * 1000), 1);
+  --fin: clamp(0, calc((var(--rp) - 0.97) / 0.03), 1);
+
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 70% 4%, var(--coord-scope-surface) 0%, transparent 62%),
+    var(--universum-bg-navy);
+  color: var(--coord-scope-ink);
+}
+
+/* Per-workstream state (set --k = 1…4): on = started, dn = completed, cur = active
+   now; lvl = brightness (inactive → active → settled complete). */
+.rk {
+  --on: clamp(0, calc(var(--rs) - var(--k) + 1), 1);
+  --dn: clamp(0, calc(var(--rn) - var(--k) + 1), 1);
+  --cur: calc(var(--on) - var(--dn));
+  --lvl: calc(
+    var(--coord-scope-inactive-opacity) +
+      (var(--coord-scope-complete-opacity) - var(--coord-scope-inactive-opacity)) * var(--on) +
+      (var(--coord-scope-active-opacity) - var(--coord-scope-complete-opacity)) * var(--cur)
+  );
+}
+
+/* ───────── Stage + copy (mobile first) ───────── */
+
+.coordination-scope__stage {
+  position: relative;
+  isolation: isolate;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 72px var(--universum-gutter) 72px;
+}
+
+.coordination-scope__copy {
+  position: relative;
+  z-index: var(--coord-scope-z-content);
+  max-width: 36rem;
+}
+
+.coordination-scope__title {
+  position: relative;
+  margin: 0;
+  padding-left: 18px;
+  font-size: clamp(30px, 8.4vw, 40px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.coordination-scope__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.08em;
+  bottom: 0.08em;
+  width: 4px;
+  background: var(--coord-scope-signal);
+}
+
+.coordination-scope__lead {
+  margin: 18px 0 0 18px;
+  max-width: 30em;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.coordination-scope__note {
+  margin: 14px 0 0 18px;
+  max-width: 32em;
+  color: var(--coord-scope-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ───────── Workstreams: vertical spine (mobile / tablet) ───────── */
+
+.coordination-scope__workstreams {
+  --axis-x: 30px;
+  --cs-node-y: 11px; /* node centre below the top of each item; read by the script */
+  position: relative;
+  z-index: var(--coord-scope-z-content);
+  margin: 36px 0 0;
+  padding: 36px 0 12px;
+  list-style: none;
+}
+
+.coordination-scope__workstreams::before,
+.coordination-scope__workstreams::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--axis-x) - 1.5px);
+  width: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.coordination-scope__workstreams::before {
+  background: rgb(0 180 247 / 0.24);
+}
+
+.coordination-scope__workstreams::after {
+  background: var(--coord-scope-route);
+  box-shadow: 0 0 10px rgb(32 228 244 / 0.45);
+  transform: scaleY(var(--rp));
+  transform-origin: top;
+}
+
+.cs-item {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 40px;
+  padding-left: 72px;
+}
+
+.cs-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Node on the spine (generated, decorative) and the short branch that enters it. */
+.cs-item::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 8px);
+  top: calc(var(--cs-node-y) - 8px);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--coord-scope-signal);
+  opacity: calc(0.5 + 0.5 * var(--on));
+  transform: scale(calc(0.82 + 0.18 * var(--on)));
+  box-shadow:
+    0 0 0 3px var(--universum-bg-navy),
+    0 0 0 calc(5px + 5px * var(--cur)) rgb(32 228 244 / calc(0.2 * var(--on) + 0.4 * var(--cur)));
+}
+
+.cs-item::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) + 8px);
+  top: calc(var(--cs-node-y) - 1px);
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--coord-scope-route), transparent);
+  opacity: calc(0.18 + 0.6 * var(--on));
+}
+
+.cs-label {
+  position: relative;
+  display: block;
+  max-width: 20em;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.cs-desc {
+  max-width: 30em;
+  margin: 8px 0 0;
+  color: var(--coord-scope-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.cs-mark {
+  position: relative;
+  width: min(100%, 12.5rem);
+  margin-top: 16px;
+  aspect-ratio: 240 / 180;
+  pointer-events: none;
+  translate: 0 calc((1 - var(--on)) * 8px);
+}
+
+.cs-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Local marks: sharpen as their workstream starts, then stay softly active. */
+.cs-mk,
+.cs-mk-dash,
+.cs-mk-faint {
+  fill: none;
+  stroke: #b5f4f7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+.cs-mk {
+  stroke-opacity: 0.85;
+}
+.cs-mk-dash {
+  stroke-dasharray: 4 6;
+  stroke-opacity: 0.78;
+}
+.cs-mk-faint {
+  stroke-opacity: 0.32;
+}
+.cs-mk-dot {
+  fill: #b5f4f7;
+  fill-opacity: 0.9;
+}
+.cs-mark svg {
+  opacity: var(--lvl);
+}
+
+/* Destination node + exit corridor under the spine (mobile / tablet only). */
+.cs-dest {
+  --axis-x: 30px;
+  position: relative;
+  z-index: var(--coord-scope-z-content);
+  height: 112px;
+}
+
+.cs-dest::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 1.5px);
+  top: 0;
+  height: 30px;
+  width: 3px;
+  background: var(--coord-scope-route);
+  box-shadow: 0 0 10px rgb(32 228 244 / 0.45);
+  opacity: var(--dst);
+}
+
+.cs-dest::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--axis-x) - 10px);
+  top: 30px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--coord-scope-signal);
+  opacity: calc(0.4 + 0.6 * var(--dst));
+  box-shadow:
+    0 0 0 3px var(--universum-bg-navy),
+    0 0 0 calc(4px + 3px * var(--dst)) rgb(32 228 244 / calc(0.25 + 0.4 * var(--dst)));
+}
+
+/* Tablet: text left, mark right, spine on the left. */
+@media (min-width: 768px) {
+  .coordination-scope__stage {
+    padding-block: 96px 96px;
+  }
+  .coordination-scope__title {
+    font-size: clamp(40px, 5.2vw, 52px);
+  }
+  .coordination-scope__lead {
+    font-size: 20px;
+  }
+  .coordination-scope__note {
+    font-size: 16px;
+  }
+  .coordination-scope__workstreams {
+    --axis-x: 34px;
+    margin-top: 48px;
+  }
+  .cs-dest {
+    --axis-x: 34px;
+  }
+  .cs-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 14rem);
+    align-items: start;
+    column-gap: 36px;
+    margin-bottom: 44px;
+    padding-left: 84px;
+  }
+  .cs-item::after {
+    width: 40px;
+  }
+  .cs-label {
+    font-size: 19px;
+  }
+  .cs-mark {
+    justify-self: end;
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
+/* Low-height landscape phones / tablets: tighter, never pinned. */
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 1199px) {
+  .coordination-scope__stage {
+    padding-block: 40px 48px;
+  }
+  .coordination-scope__workstreams {
+    margin-top: 24px;
+    padding-block: 24px 8px;
+  }
+  .cs-item {
+    margin-bottom: 24px;
+  }
+  .cs-mark {
+    max-width: 11rem;
+  }
+  .cs-dest {
+    height: 80px;
+  }
+}
+
+/* ───────── Decorative scene ───────── */
+
+.coordination-scope__scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.coordination-scope__scene picture {
+  display: contents;
+}
+
+/* Vertical layouts: the yard plate fades in behind the top of the block. */
+.cs-bg {
+  position: absolute;
+  z-index: var(--coord-scope-z-background);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: min(820px, 100%);
+  object-fit: cover;
+  object-position: 55% 40%;
+  opacity: 0.34;
+  -webkit-mask-image: linear-gradient(#000 30%, transparent);
+  mask-image: linear-gradient(#000 30%, transparent);
+}
+
+.cs-veil,
+.cs-map,
+.cs-diagram {
+  display: none;
+}
+
+.cs-grid {
+  position: absolute;
+  inset: 0;
+  z-index: var(--coord-scope-z-overlay);
+  background-image:
+    linear-gradient(rgb(0 180 247 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 180 247 / 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(#000, transparent 70%);
+  mask-image: linear-gradient(#000, transparent 70%);
+}
+
+/* ───────── Desktop >= 1200px: connected coordination yard ───────── */
+
+@media (min-width: 1200px) {
+  .coordination-scope {
+    --dst-at: 0.88;
+  }
+
+  .coordination-scope__stage {
+    container-type: inline-size;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    aspect-ratio: 1672 / 1060;
+  }
+
+  .coordination-scope__copy {
+    position: absolute;
+    z-index: var(--coord-scope-z-content);
+    left: 3.6%;
+    top: 9%;
+    width: 31%;
+    max-width: none;
+  }
+  .coordination-scope__title {
+    padding-left: 1.3cqw;
+    font-size: 3.25cqw;
+  }
+  .coordination-scope__title::before {
+    width: 0.3cqw;
+    min-width: 3px;
+  }
+  .coordination-scope__lead {
+    margin: 1.7cqw 0 0 1.3cqw;
+    max-width: 24em;
+    font-size: clamp(16px, 1.55cqw, 30px);
+  }
+  .coordination-scope__note {
+    margin: 1.2cqw 0 0 1.3cqw;
+    max-width: 30em;
+    font-size: clamp(13px, 1.05cqw, 20px);
+  }
+
+  /* One DOM serves every breakpoint: here list items are plain wrappers, and text /
+     marks are placed in percent of the stage. */
+  .coordination-scope__workstreams {
+    position: static;
+    margin: 0;
+    padding: 0;
+  }
+  .coordination-scope__workstreams::before,
+  .coordination-scope__workstreams::after,
+  .cs-item::before,
+  .cs-item::after,
+  .cs-dest {
+    display: none;
+  }
+  .cs-item {
+    position: static;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cs-text {
+    position: absolute;
+    z-index: var(--coord-scope-z-content);
+    left: var(--lx);
+    top: var(--ly);
+    width: var(--lw);
+  }
+  .cs-label {
+    max-width: none;
+    padding-left: 1.1cqw;
+    font-size: 1.3cqw;
+  }
+  .cs-label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.1em;
+    bottom: 0.1em;
+    width: 0.25cqw;
+    min-width: 3px;
+    background: var(--coord-scope-signal);
+    opacity: calc(0.55 + 0.45 * var(--on));
+  }
+  .cs-desc {
+    max-width: none;
+    margin: 0.6cqw 0 0 1.1cqw;
+    font-size: clamp(12px, 1.05cqw, 19px);
+    line-height: 1.4;
+  }
+
+  .cs-mark {
+    position: absolute;
+    z-index: var(--coord-scope-z-frame);
+    left: var(--mx);
+    top: var(--my);
+    width: var(--mw);
+    margin: 0;
+    translate: none;
+  }
+
+  .cs-bg {
+    height: 100%;
+    object-position: 50% 50%;
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .cs-veil {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--coord-scope-z-overlay);
+    background:
+      linear-gradient(90deg, rgb(3 25 35 / 0.92) 0%, rgb(3 25 35 / 0.7) 32%, rgb(3 25 35 / 0.34) 100%),
+      linear-gradient(180deg, var(--universum-bg-navy) 0, rgb(6 26 42 / 0) 12%),
+      linear-gradient(0deg, var(--universum-bg-navy) 0, rgb(6 26 42 / 0) 10%);
+  }
+
+  .cs-grid {
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 72%);
+    mask-image: linear-gradient(90deg, #000 0%, transparent 72%);
+    background-size: 4.3cqw 4.3cqw;
+  }
+
+  .cs-map {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--coord-scope-z-overlay);
+    width: 100%;
+    height: 100%;
+    opacity: 0.38;
+  }
+
+  .cs-diagram {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--coord-scope-z-route);
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+}
+
+/* ───────── Diagram (desktop SVG) ───────── */
+
+.cs-diagram g[style*='--a'] {
+  --seg: clamp(0, calc((var(--rp) - var(--a)) / var(--w)), 1);
+}
+
+.cs-route__track,
+.cs-route__glow,
+.cs-route__lit {
+  fill: none;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+}
+.cs-route__track {
+  stroke: rgb(0 180 247 / 0.26);
+  stroke-width: 3;
+}
+.cs-route__glow,
+.cs-route__lit {
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 * (1 - var(--seg)));
+}
+.cs-route__glow {
+  stroke: rgb(32 228 244 / 0.26);
+  stroke-width: 13;
+}
+.cs-route__lit {
+  stroke: var(--coord-scope-route);
+  stroke-width: 4.5;
+}
+.cs-route__arrow {
+  fill: var(--coord-scope-route);
+  opacity: var(--fin);
+}
+
+/* Schematic coordination frame: thin, low-opacity rails; a segment clears with its stream. */
+.cs-frame__rails,
+.cs-frame__truss,
+.cs-frame__end {
+  fill: none;
+  stroke: var(--coord-scope-frame);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cs-frame__rails {
+  stroke-width: 2;
+}
+.cs-frame__truss {
+  stroke-width: 1.4;
+  stroke-opacity: 0.7;
+}
+.cs-frame__end {
+  stroke-width: 2;
+  stroke-opacity: 0.5;
+}
+.cs-frame {
+  opacity: var(--lvl);
+}
+
+/* Nodes: yellow core, cyan halo, soft ring on the active one. No perpetual pulse. */
+.cs-node__core {
+  fill: var(--coord-scope-signal);
+}
+.cs-node__halo {
+  fill: rgb(6 26 42 / 0.55);
+  stroke: var(--coord-scope-route);
+  stroke-width: 2.5;
+}
+.cs-node--handoff .cs-node__core {
+  opacity: calc(0.45 + 0.55 * var(--dn));
+  transform: scale(calc(0.8 + 0.2 * var(--dn)));
+}
+.cs-node--handoff .cs-node__halo {
+  opacity: calc(0.3 * var(--dn) + 0.55 * var(--cur));
+}
+.cs-node__pulse {
+  fill: none;
+  stroke: var(--coord-scope-signal);
+  stroke-width: 2;
+  opacity: calc(0.45 * var(--cur));
+  transform: scale(calc(0.6 + 0.4 * var(--cur)));
+}
+.cs-node--split .cs-node__core {
+  opacity: calc(0.45 + 0.55 * var(--entry));
+}
+.cs-node--split .cs-node__halo {
+  opacity: calc(0.15 + 0.3 * var(--entry));
+}
+.cs-node--dest .cs-node__core {
+  opacity: calc(0.4 + 0.6 * var(--dst));
+}
+.cs-node--dest .cs-node__halo {
+  opacity: calc(0.15 + 0.5 * var(--dst));
+}
+.cs-node circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ───────── Motion: short state transitions only (scroll scrubs the routes) ───────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .coordination-scope[data-enhanced] :is(.cs-mark svg, .cs-frame) {
+    transition: opacity var(--coord-scope-local-duration) var(--coord-scope-ease);
+  }
+  .coordination-scope[data-enhanced] .cs-mark {
+    transition: translate var(--coord-scope-local-duration) var(--coord-scope-ease);
+  }
+  .coordination-scope[data-enhanced] :is(.cs-node__core, .cs-node__halo, .cs-node__pulse) {
+    transition:
+      opacity var(--coord-scope-node-duration) var(--coord-scope-ease),
+      transform 420ms var(--coord-scope-ease);
+  }
+  .coordination-scope[data-enhanced] .cs-item::before,
+  .coordination-scope[data-enhanced] .cs-item::after,
+  .coordination-scope[data-enhanced] .cs-label::before,
+  .coordination-scope[data-enhanced] .cs-dest::before,
+  .coordination-scope[data-enhanced] .cs-dest::after {
+    transition:
+      opacity var(--coord-scope-node-duration) var(--coord-scope-ease),
+      transform var(--coord-scope-node-duration) var(--coord-scope-ease),
+      box-shadow 420ms var(--coord-scope-ease);
+  }
+  .coordination-scope[data-enhanced] .cs-route__arrow {
+    transition: opacity var(--coord-scope-local-duration) var(--coord-scope-ease);
+  }
+}
+
+/* Reduced motion: always the assembled scene, no transitions or shifts. */
+@media (prefers-reduced-motion: reduce) {
+  .coordination-scope {
+    --rs: 4 !important;
+    --rn: 4 !important;
+    --rp: 1 !important;
+    --coord-scope-local-duration: 0ms;
+    --coord-scope-node-duration: 0ms;
+  }
+  .cs-mark {
+    translate: none !important;
+  }
+  .cs-node__pulse {
+    transform: none;
+  }
+}

@@ -1,0 +1,55 @@
+---
+// Continuous desktop route in reference coordinates (1672 × 941). Six segments,
+// each ending at a node (the last one is the exit towards the next block).
+// Decorative only: the parent scene is aria-hidden.
+const segments = [
+  { d: 'M688 0 C688 52 714 103 770 107', a: 0 },
+  {
+    d: 'M770 107 C800 118 870 120 960 122 C1020 124 1006 215 1012 262 C1018 306 1070 330 1135 325',
+    a: 0.18,
+  },
+  {
+    d: 'M1135 325 C1100 400 1030 424 930 425 C880 426 840 424 806 440 C760 462 730 495 700 535',
+    a: 0.36,
+  },
+  { d: 'M700 535 C745 585 812 610 830 660 C836 678 838 692 836 705', a: 0.54 },
+  {
+    d: 'M836 705 C850 745 900 765 960 756 C1030 745 1080 722 1140 728 C1180 732 1200 740 1224 743',
+    a: 0.72,
+  },
+  {
+    d: 'M1224 743 C1262 782 1310 815 1380 806 C1440 799 1480 795 1530 808 C1580 820 1620 870 1645 898',
+    a: 0.9,
+  },
+];
+const nodes = [
+  { x: 770, y: 107 },
+  { x: 1135, y: 325 },
+  { x: 700, y: 535 },
+  { x: 836, y: 705 },
+  { x: 1224, y: 743 },
+];
+---
+
+<svg class="q-route" viewBox="0 0 1672 941" focusable="false">
+  {
+    segments.map((s) => (
+      <g style={`--a:${s.a};--w:${s.a === 0.9 ? 0.1 : 0.18}`}>
+        <path class="q-route__track" d={s.d} />
+        <path class="q-route__glow" d={s.d} pathLength="100" />
+        <path class="q-route__lit" d={s.d} pathLength="100" />
+      </g>
+    ))
+  }
+  <polygon class="q-route__arrow" points="0,0 -20,-9 -20,9" transform="translate(1648 901) rotate(48)"
+  ></polygon>
+  {
+    nodes.map((n, i) => (
+      <g class="q-node qk" style={`--k:${i + 1}`} transform={`translate(${n.x} ${n.y})`}>
+        <circle class="q-node__pulse" r="38"></circle>
+        <circle class="q-node__halo" r="23"></circle>
+        <circle class="q-node__core" r="9.5"></circle>
+      </g>
+    ))
+  }
+</svg>

@@ -1,0 +1,36 @@
+---
+// Continuous desktop route in reference coordinates (1672 × 941): six segments,
+// each ending at a node; the last one is the exit towards the next block.
+// Decorative only: the parent scene is aria-hidden.
+interface Props {
+  segments: { d: string; a: number; w: number }[];
+  nodes: { x: number; y: number }[];
+  arrow: { x: number; y: number; rot: number };
+}
+const { segments, nodes, arrow } = Astro.props;
+---
+
+<svg class="rm-route" viewBox="0 0 1672 941" focusable="false">
+  {
+    segments.map((s) => (
+      <g style={`--a:${s.a};--w:${s.w}`}>
+        <path class="rm-route__track" d={s.d} />
+        <path class="rm-route__glow" d={s.d} pathLength="100" />
+        <path class="rm-route__lit" d={s.d} pathLength="100" />
+      </g>
+    ))
+  }
+  <polygon
+    class="rm-route__arrow"
+    points="0,0 -20,-9 -20,9"
+    transform={`translate(${arrow.x} ${arrow.y}) rotate(${arrow.rot})`}></polygon>
+  {
+    nodes.map((n, i) => (
+      <g class="rm-node rk" style={`--k:${i + 1}`} transform={`translate(${n.x} ${n.y})`}>
+        <circle class="rm-node__pulse" r="36"></circle>
+        <circle class="rm-node__halo" r="22"></circle>
+        <circle class="rm-node__core" r="9.5"></circle>
+      </g>
+    ))
+  }
+</svg>

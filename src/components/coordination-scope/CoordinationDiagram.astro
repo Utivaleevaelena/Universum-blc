@@ -1,0 +1,97 @@
+---
+// Desktop coordination diagram in stage units (1672 × 1060): incoming route, split
+// node, four branches to four handoff nodes on a schematic frame, convergence to one
+// destination, outgoing corridor. Decorative only: the parent scene is aria-hidden.
+interface Seg {
+  d: string;
+  a: number;
+  w: number;
+  id: string;
+}
+interface Props {
+  routes: Seg[];
+  nodes: { x: number; y: number }[];
+  frame: { x0: number; x1: number; y: number; bounds: number[] };
+  split: { x: number; y: number };
+  dest: { x: number; y: number };
+  arrow: { x: number; y: number; rot: number };
+  size: { w: number; h: number };
+}
+const { routes, nodes, frame, split, dest, arrow, size } = Astro.props;
+
+// Schematic frame: two thin rails with a light zig-zag between them, one group per
+// workstream segment, so each segment can become clear with its stream.
+const railTop = frame.y - 13;
+const railBottom = frame.y + 13;
+const segments = frame.bounds.slice(0, -1).map((x0, i) => {
+  const x1 = frame.bounds[i + 1];
+  const pts: string[] = [];
+  let up = false;
+  for (let x = x0; x < x1; x += 26) {
+    pts.push(`${x} ${up ? railTop : railBottom}`);
+    up = !up;
+  }
+  pts.push(`${x1} ${up ? railTop : railBottom}`);
+  return {
+    rails: `M${x0} ${railTop} H${x1} M${x0} ${railBottom} H${x1}`,
+    truss: `M${pts.join(' L')}`,
+  };
+});
+---
+
+<svg class="cs-diagram" viewBox={`0 0 ${size.w} ${size.h}`} focusable="false">
+  <g id="coord-frame">
+    {
+      segments.map((s, i) => (
+        <g class="cs-frame rk" style={`--k:${i + 1}`}>
+          <path class="cs-frame__rails" d={s.rails}></path>
+          <path class="cs-frame__truss" d={s.truss}></path>
+        </g>
+      ))
+    }
+    <path
+      class="cs-frame__end"
+      d={`M${frame.x0} ${railTop - 12} V${railBottom + 12} M${frame.x1} ${railTop - 12} V${railBottom + 12}`}
+    ></path>
+  </g>
+
+  {
+    routes.map((r) => (
+      <g id={r.id} style={`--a:${r.a};--w:${r.w}`}>
+        <path class="cs-route__track" d={r.d}></path>
+        <path class="cs-route__glow" d={r.d} pathLength="100"></path>
+        <path class="cs-route__lit" d={r.d} pathLength="100"></path>
+      </g>
+    ))
+  }
+
+  <polygon
+    class="cs-route__arrow"
+    points="0,0 -9,-20 9,-20"
+    transform={`translate(${arrow.x} ${arrow.y}) rotate(${arrow.rot})`}></polygon>
+
+  <g id="coord-split-node" class="cs-node cs-node--split" transform={`translate(${split.x} ${split.y})`}>
+    <circle class="cs-node__halo" r="22"></circle>
+    <circle class="cs-node__core" r="9.5"></circle>
+  </g>
+
+  {
+    nodes.map((n, i) => (
+      <g
+        id={`coord-handoff-node-${i + 1}`}
+        class="cs-node cs-node--handoff rk"
+        style={`--k:${i + 1}`}
+        transform={`translate(${n.x} ${n.y})`}
+      >
+        <circle class="cs-node__pulse" r="36"></circle>
+        <circle class="cs-node__halo" r="22"></circle>
+        <circle class="cs-node__core" r="9.5"></circle>
+      </g>
+    ))
+  }
+
+  <g id="coord-destination-node" class="cs-node cs-node--dest" transform={`translate(${dest.x} ${dest.y})`}>
+    <circle class="cs-node__halo" r="30"></circle>
+    <circle class="cs-node__core" r="11"></circle>
+  </g>
+</svg>

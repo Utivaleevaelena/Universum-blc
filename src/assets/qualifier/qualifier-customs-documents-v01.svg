@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 520" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Layered customs and permits documents</title>
+  <desc id="desc">Four translucent technical document panels with editable groups for sequential activation.</desc>
+  <defs>
+    <linearGradient id="panel-fill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#BDF8FF" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#1BCDE2" stop-opacity=".05"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g id="document-stack" stroke-linecap="round" stroke-linejoin="round">
+    <g id="doc-back-03" data-activation-step="1" opacity=".28" transform="translate(48 14)">
+      <rect x="84" y="80" width="286" height="344" rx="2" fill="url(#panel-fill)" stroke="#49DDEE" stroke-width="2"/>
+      <path d="M126 132h128M126 168h188M126 204h152" stroke="#9CF5FF" stroke-width="8" opacity=".46"/>
+    </g>
+
+    <g id="doc-back-02" data-activation-step="2" opacity=".42" transform="translate(30 30)">
+      <rect x="84" y="80" width="286" height="344" rx="2" fill="url(#panel-fill)" stroke="#55E6F5" stroke-width="2"/>
+      <path d="M126 132h128M126 168h188M126 204h152" stroke="#AFF8FF" stroke-width="8" opacity=".52"/>
+    </g>
+
+    <g id="doc-back-01" data-activation-step="3" opacity=".58" transform="translate(14 46)">
+      <rect x="84" y="80" width="286" height="344" rx="2" fill="url(#panel-fill)" stroke="#68ECF9" stroke-width="2"/>
+      <path d="M126 132h128M126 168h188M126 204h152" stroke="#BDF9FF" stroke-width="8" opacity=".58"/>
+    </g>
+
+    <g id="doc-front" data-activation-step="4" transform="translate(68 62)" filter="url(#soft-glow)">
+      <rect x="84" y="80" width="286" height="344" rx="2" fill="#0E4450" fill-opacity=".58" stroke="#E5FDFF" stroke-width="3"/>
+      <g id="doc-copy-lines" stroke="#C9FAFF">
+        <path d="M126 132h116" stroke-width="10" opacity=".92"/>
+        <path d="M126 174h184" stroke-width="8" opacity=".78"/>
+        <path d="M126 210h148" stroke-width="8" opacity=".72"/>
+        <path d="M126 246h178" stroke-width="7" opacity=".66"/>
+      </g>
+      <g id="doc-form-grid" stroke="#8BEFF9" stroke-width="2" opacity=".8">
+        <rect x="126" y="292" width="198" height="94"/>
+        <path d="M126 323h198M126 354h198M176 292v94M236 292v94"/>
+      </g>
+    </g>
+  </g>
+</svg>

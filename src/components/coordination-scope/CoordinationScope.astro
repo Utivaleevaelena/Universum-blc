@@ -1,0 +1,297 @@
+---
+import { Picture } from 'astro:assets';
+import { coordinationScopeContent } from '../../i18n/content';
+import type { Locale } from '../../i18n/routes';
+import '../../styles/coordination-scope.css';
+
+import environment from '../../assets/coordination-scope/convergence-yard-environment-background-v01.png';
+import CoordinationDiagram from './CoordinationDiagram.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = coordinationScopeContent[locale];
+
+// ───────── Local marks (code-native, generic, one per workstream) ─────────
+// Abstract line marks in a 240 × 180 box. The mode marks are generic ship / truck /
+// aircraft outlines: no logo, no operator identity, no owned-fleet framing.
+const marks = [
+  // Route logic — an abstract route with waypoints.
+  `<path class="cs-mk-dash" d="M34 168 C10 132 62 112 50 80 C40 52 104 46 112 16"/>
+   <path class="cs-mk-faint" d="M34 168 C60 150 96 156 128 140"/>
+   <circle class="cs-mk-dot" cx="34" cy="168" r="5"/>
+   <circle class="cs-mk-dot" cx="50" cy="80" r="5"/>
+   <circle class="cs-mk-dot" cx="112" cy="16" r="5"/>
+   <circle class="cs-mk-dot" cx="128" cy="140" r="4"/>`,
+  // Suitable transport modes — ship, truck, aircraft outlines.
+  `<path class="cs-mk-faint" d="M130 22 C170 30 170 52 130 60 M130 82 C176 92 176 114 130 124"/>
+   <path class="cs-mk" d="M16 50 H118 L106 64 H30 Z"/>
+   <rect class="cs-mk" x="38" y="34" width="16" height="12"/>
+   <rect class="cs-mk" x="58" y="34" width="16" height="12"/>
+   <rect class="cs-mk" x="78" y="34" width="16" height="12"/>
+   <rect class="cs-mk" x="98" y="26" width="10" height="20"/>
+   <rect class="cs-mk" x="16" y="92" width="62" height="28"/>
+   <path class="cs-mk" d="M78 100 H98 L110 112 V120 H78 Z"/>
+   <circle class="cs-mk" cx="34" cy="124" r="5"/>
+   <circle class="cs-mk" cx="62" cy="124" r="5"/>
+   <circle class="cs-mk" cx="98" cy="124" r="5"/>
+   <path class="cs-mk" d="M14 160 L66 156 L52 136 L62 136 L92 156 L120 154 Q130 160 120 166 L92 164 L62 184 L52 184 L66 166 Z" transform="translate(0 -8)"/>`,
+  // Carrier & party coordination — three handoff boxes joined by a dashed link.
+  `<path class="cs-mk-dash" d="M130 40 V54 H70 V68 M70 98 V112 H130 V126"/>
+   <rect class="cs-mk" x="88" y="10" width="84" height="30" rx="6"/>
+   <rect class="cs-mk" x="28" y="68" width="84" height="30" rx="6"/>
+   <rect class="cs-mk" x="88" y="126" width="84" height="30" rx="6"/>
+   <path class="cs-mk" d="M104 25 H156 M104 25 l6 -5 M104 25 l6 5 M156 25 l-6 -5 M156 25 l-6 5"/>
+   <path class="cs-mk" d="M44 83 H96 M44 83 l6 -5 M44 83 l6 5 M96 83 l-6 -5 M96 83 l-6 5"/>
+   <path class="cs-mk" d="M104 141 H156 M104 141 l6 -5 M104 141 l6 5 M156 141 l-6 -5 M156 141 l-6 5"/>
+   <circle class="cs-mk-dot" cx="130" cy="54" r="4"/>
+   <circle class="cs-mk-dot" cx="70" cy="112" r="4"/>`,
+  // Permits & customs support — generic documents with a check.
+  `<rect class="cs-mk" x="46" y="6" width="112" height="80" rx="4"/>
+   <rect class="cs-mk-faint" x="36" y="16" width="112" height="80" rx="4"/>
+   <path class="cs-mk" d="M62 28 H128 M62 44 H116 M62 60 H104"/>
+   <circle class="cs-mk" cx="140" cy="78" r="13"/>
+   <path class="cs-mk" d="M133 78 l5 5 l9 -10"/>
+   <rect class="cs-mk" x="26" y="108" width="118" height="68" rx="4"/>
+   <path class="cs-mk" d="M40 124 l5 5 l9 -9 M62 124 H128 M40 142 l5 5 l9 -9 M62 142 H116 M40 160 l5 5 l9 -9 M62 160 H104"/>`,
+];
+
+// ───────── Desktop geometry: stage units 1672 × 1060 ─────────
+const W = 1672;
+const H = 1060;
+const split = { x: 1030, y: 120 };
+const dest = { x: 1010, y: 900 };
+const laneLeft = [640, 885, 1140, 1395]; // text column of each lane
+const laneX = laneLeft.map((l) => l - 20); // branch line + handoff node of each lane
+const laneWidth = [205, 215, 215, 215];
+const textTop = 190;
+const markTop = 470;
+const markWidth = 205;
+const frameY = 700;
+const frame = { x0: 470, x1: 1630, y: frameY, bounds: [470, 742, 992, 1248, 1630] };
+const nodes = laneX.map((x) => ({ x, y: frameY }));
+
+const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(3)}%`;
+const itemStyle = (i: number) =>
+  [
+    `--k:${i + 1}`,
+    `--lx:${pct(laneLeft[i], W)}`,
+    `--ly:${pct(textTop, H)}`,
+    `--lw:${pct(laneWidth[i], W)}`,
+    `--mx:${pct(laneLeft[i] + 4, W)}`,
+    `--my:${pct(markTop, H)}`,
+    `--mw:${pct(markWidth, W)}`,
+  ].join(';');
+
+// Thresholds (approved): entry 0.12, streams 0.26 / 0.40 / 0.54 / 0.68, convergence
+// 0.88, exit 1.00. Each stream's branch draws between its start and end.
+const starts = [0.12, 0.26, 0.4, 0.54];
+const ends = [0.26, 0.4, 0.54, 0.68];
+const routes = [
+  { id: 'coord-incoming-route', d: `M1336 0 C1336 64 ${split.x} 48 ${split.x} ${split.y}`, a: 0, w: 0.12 },
+  ...laneX.map((x, i) => ({
+    id: `coord-workstream-${i + 1}`,
+    d: `M${split.x} ${split.y} C${split.x} 170 ${x} 140 ${x} 215 L${x} ${frameY}`,
+    a: starts[i],
+    w: Math.round((ends[i] - starts[i]) * 1000) / 1000,
+  })),
+  ...laneX.map((x, i) => ({
+    id: `coord-convergence-route-${i + 1}`,
+    d: `M${x} ${frameY} C${x} 800 ${dest.x} 790 ${dest.x} ${dest.y}`,
+    a: 0.68,
+    w: 0.2,
+  })),
+  { id: 'coord-outgoing-route', d: `M${dest.x} ${dest.y} L${dest.x} ${H}`, a: 0.88, w: 0.12 },
+];
+const arrow = { x: dest.x, y: H - 4, rot: 90 };
+---
+
+<section
+  class="coordination-scope"
+  id="coordination-scope"
+  aria-labelledby="coordination-scope-title"
+  data-content-status={t.status}
+>
+  <div class="coordination-scope__stage">
+    <header class="coordination-scope__copy">
+      <h2 class="coordination-scope__title" id="coordination-scope-title">{t.title}</h2>
+      <p class="coordination-scope__lead">{t.body}</p>
+      <p class="coordination-scope__note">{t.scopeNote}</p>
+    </header>
+
+    <ol class="coordination-scope__workstreams" role="list">
+      {
+        t.workstreams.map((w, i) => (
+          <li class="cs-item rk" style={itemStyle(i)} data-workstream={w.id} data-state="completed">
+            <div class="cs-text">
+              <h3 class="cs-label">{w.label}</h3>
+              <p class="cs-desc">{w.description}</p>
+            </div>
+            <div class="cs-mark" aria-hidden="true">
+              <svg viewBox="0 0 240 180" focusable="false">
+                <Fragment set:html={marks[i]} />
+              </svg>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+    <div class="cs-dest" aria-hidden="true"></div>
+
+    <!-- Decorative scene: environment, grid, map dots and the desktop diagram. -->
+    <div class="coordination-scope__scene" aria-hidden="true">
+      <Picture
+        class="cs-bg"
+        src={environment}
+        alt=""
+        widths={[768, 1280, 1672]}
+        sizes="(min-width: 1200px) 100vw, 1100px"
+        formats={['avif', 'webp']}
+        fallbackFormat="webp"
+        quality={50}
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="cs-veil"></div>
+      <div class="cs-grid"></div>
+      <svg class="cs-map" viewBox={`0 0 ${W} ${H}`} focusable="false">
+        <defs>
+          <pattern id="cs-dots" width="9" height="9" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.7" fill="#7fd9e6"></circle>
+          </pattern>
+          <clipPath id="cs-land">
+            <path d="M30 640 L92 620 L150 632 L196 658 L184 692 L150 710 L158 748 L124 768 L96 746 L82 704 L42 686 Z"></path>
+            <path d="M236 620 L300 602 L372 610 L430 636 L486 628 L520 660 L486 686 L430 680 L402 720 L350 746 L318 724 L302 686 L260 668 Z"></path>
+          </clipPath>
+        </defs>
+        <rect x="0" y="590" width="560" height="200" fill="url(#cs-dots)" clip-path="url(#cs-land)"></rect>
+      </svg>
+      <CoordinationDiagram
+        routes={routes}
+        nodes={nodes}
+        frame={frame}
+        split={split}
+        dest={dest}
+        arrow={arrow}
+        size={{ w: W, h: H }}
+      />
+    </div>
+  </div>
+</section>
+
+<script>
+  // Scroll-linked coordination scene. Native scroll only: no pinning, no timers, no
+  // continuous loop. One passive scroll + resize listener, at most one DOM write
+  // pass per animation frame, state derived from the actual scroll position.
+  const section = document.querySelector<HTMLElement>('#coordination-scope');
+  const stage = section?.querySelector<HTMLElement>('.coordination-scope__stage') ?? null;
+  const list = section?.querySelector<HTMLElement>('.coordination-scope__workstreams') ?? null;
+
+  if (section && stage && list && list.children.length === 4) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const wide = window.matchMedia('(min-width: 1200px)');
+    const items = Array.from(list.children) as HTMLElement[];
+    // Approved thresholds: stream k starts / ends, convergence ends at 0.88.
+    const START = [0.12, 0.26, 0.4, 0.54];
+    const END = [0.26, 0.4, 0.54, 0.68];
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+
+    let frame = 0;
+    let running = false;
+    let last = { rs: -1, rn: -1, p: -1 };
+
+    // Map the scroll position onto 0…1 between two document offsets. The end is
+    // capped at the last reachable scroll position, so the scene can still finish
+    // while this is the last block on the page.
+    const range = (y: number, start: number, end: number) =>
+      end > start ? clamp01((y - start) / (end - start)) : y >= start ? 1 : 0;
+
+    const compute = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const y = window.scrollY;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+      let rs = 0; // streams started (marks clear)
+      let rn = 0; // streams completed (handoff node lit)
+      let p = 1;
+
+      if (wide.matches) {
+        // Desktop: block progress. Starts when the stage top reaches 80% of the
+        // viewport, ends when its bottom reaches 60%.
+        const r = stage.getBoundingClientRect();
+        p = range(y, y + r.top - 0.8 * vh, Math.min(y + r.bottom - 0.6 * vh, maxY));
+        rs = START.filter((t) => p >= t).length;
+        rn = END.filter((t) => p >= t).length;
+      } else {
+        // Tablet / mobile: vertical spine. The line fills down while a reference
+        // line at 60% of the viewport moves through the list; a node lights as the
+        // line reaches it and completes when the line moves on.
+        const nodeY = parseFloat(getComputedStyle(list).getPropertyValue('--cs-node-y')) || 11;
+        const ref = vh * 0.6;
+        const lr = list.getBoundingClientRect();
+        p = range(y, y + lr.top - ref, Math.min(y + lr.top + lr.height - ref, maxY));
+        let reached = 0;
+        for (const li of items) {
+          const frac = (li.getBoundingClientRect().top - lr.top + nodeY) / (lr.height || 1);
+          if (frac <= p) reached += 1;
+        }
+        rs = p >= 1 ? 4 : Math.min(4, reached);
+        rn = p >= 1 ? 4 : Math.max(0, rs - 1);
+      }
+
+      const pr = Math.round(p * 1000) / 1000;
+      if (rs !== last.rs || rn !== last.rn) {
+        section.style.setProperty('--rs', String(rs));
+        section.style.setProperty('--rn', String(rn));
+        items.forEach((li, i) => {
+          li.dataset.state = rn >= i + 1 ? 'completed' : rs >= i + 1 ? 'active' : 'inactive';
+        });
+        section.dataset.corridor = rn < 4 ? 'inactive' : pr >= 1 ? 'complete' : 'assembling';
+      } else if (rn === 4) {
+        section.dataset.corridor = pr >= 1 ? 'complete' : 'assembling';
+      }
+      if (pr !== last.p) section.style.setProperty('--rp', String(pr));
+      last = { rs, rn, p: pr };
+    };
+
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(compute);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      compute();
+      // Enable transitions only after the first state is in place.
+      window.requestAnimationFrame(() => {
+        if (running) section.dataset.enhanced = 'true';
+      });
+    };
+
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      last = { rs: -1, rn: -1, p: -1 };
+      delete section.dataset.enhanced;
+      delete section.dataset.corridor;
+      section.style.removeProperty('--rs');
+      section.style.removeProperty('--rn');
+      section.style.removeProperty('--rp');
+      items.forEach((li) => {
+        li.dataset.state = 'completed';
+      });
+    };
+
+    const sync = () => (reduce.matches ? stop() : start());
+    reduce.addEventListener('change', sync);
+    sync();
+  }
+</script>
