@@ -1,0 +1,731 @@
+/* Block 05 — Human Anchor. Breakpoints: mobile < 768, tablet 768–1199, desktop >= 1200.
+   Extends the global tokens (tokens.css); block tokens come from the approved
+   build-kit DESIGN-TOKENS.css. Defaults are the assembled final state, so no-JS,
+   reduced motion and a failed enhancement all show the complete composition. */
+
+.vlad-experience {
+  --human-anchor-route: #2ce2f5;
+  --human-anchor-signal: var(--universum-signal-yellow, #ffff00);
+  --human-anchor-ink: var(--universum-text-primary, #f7fbfc);
+  --human-anchor-muted: #aecbd0;
+  --human-anchor-surface: #062f3f;
+  --human-anchor-surface-deep: #041923;
+
+  --human-anchor-inactive-opacity: 0.34;
+  --human-anchor-emphasis-opacity: 0.72;
+  --human-anchor-complete-opacity: 1;
+  --human-anchor-local-duration: 260ms;
+  --human-anchor-node-duration: 220ms;
+  --human-anchor-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --human-anchor-z-background: 0;
+  --human-anchor-z-portrait: 1;
+  --human-anchor-z-overlay: 2;
+  --human-anchor-z-route: 3;
+  --human-anchor-z-node: 4;
+  --human-anchor-z-content: 5;
+
+  /* Scroll state. --rp is block progress 0…1 (desktop) or spine fill 0…1 (vertical);
+     --hf is the number of lit handoff points 0…3. The script overrides them inline
+     only after it initialised successfully. */
+  --rp: 1;
+  --hf: 3;
+
+  /* Vertical spine geometry (mobile / tablet). */
+  --ve-pad: 36px; /* body inset that holds the spine */
+  --ve-a2t: 27px; /* axis → start of text */
+
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(110% 70% at 78% 12%, var(--human-anchor-surface) 0%, transparent 62%),
+    var(--universum-bg-navy);
+  color: var(--human-anchor-ink);
+}
+
+/* ───────── Backdrop (decorative) ───────── */
+
+.ve-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: var(--human-anchor-z-background);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ve-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ve-bg img,
+img.ve-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* Navy veil keeps the copy contrast steady; the top fade takes over from Block 04. */
+.ve-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, var(--universum-bg-navy) 0%, rgb(6 26 42 / 0%) 26%),
+    linear-gradient(180deg, rgb(4 25 35 / 68%), rgb(4 25 35 / 78%));
+}
+
+.ve-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(rgb(44 226 245 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(44 226 245 / 5%) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ───────── Stage + head (mobile first) ───────── */
+
+.vlad-experience__stage {
+  position: relative;
+  z-index: var(--human-anchor-z-portrait);
+  isolation: isolate;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 72px var(--universum-gutter) 64px;
+}
+
+.ve-head {
+  position: relative;
+  z-index: var(--human-anchor-z-content);
+  max-width: 36rem;
+}
+
+.ve-eyebrow {
+  position: relative;
+  margin: 0;
+  padding-top: 14px;
+  color: var(--human-anchor-route);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.ve-eyebrow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 3px;
+  background: var(--human-anchor-route);
+}
+
+.ve-title {
+  margin: 12px 0 0;
+  font-size: clamp(28px, 8vw, 40px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* ───────── Body: portrait → identity → proofs → transition ───────── */
+
+.ve-body {
+  position: relative;
+  z-index: var(--human-anchor-z-content);
+  display: grid;
+  margin-top: 28px;
+  padding-left: var(--ve-pad);
+}
+
+/* Vertical spine: faint track + fill that follows the scroll. */
+.ve-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--ve-pad) - var(--ve-a2t) - 1px);
+  width: 2px;
+  pointer-events: none;
+}
+
+.ve-spine::before,
+.ve-spine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--human-anchor-route);
+}
+
+.ve-spine::before {
+  opacity: 0.26;
+}
+
+.ve-spine::after {
+  transform-origin: 50% 0;
+  transform: scaleY(var(--rp));
+  box-shadow: 0 0 10px rgb(44 226 245 / 55%);
+}
+
+.ve-portrait {
+  position: relative;
+  z-index: var(--human-anchor-z-portrait);
+  width: min(100%, 24rem);
+  margin: 0;
+  aspect-ratio: 5 / 6;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--human-anchor-surface-deep);
+}
+
+.ve-portrait picture,
+.ve-portrait__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The portrait is static: no transform, filter, transition or hover effect. */
+.ve-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 56% 26%;
+}
+
+/* Soft edge so the photo sits in the environment; never touches the face. */
+.ve-portrait::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: var(--human-anchor-z-overlay);
+  background: linear-gradient(180deg, transparent 72%, rgb(4 25 35 / 55%) 100%);
+  pointer-events: none;
+}
+
+.ve-identity {
+  position: relative;
+  margin-top: 24px;
+}
+
+.ve-name {
+  margin: 0;
+  font-size: clamp(22px, 6.2vw, 28px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+.ve-role {
+  margin: 6px 0 0;
+  color: var(--human-anchor-muted);
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.ve-proofs {
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 20px;
+  counter-reset: ve-proof;
+}
+
+.ve-proof {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.4em 1fr;
+  align-items: baseline;
+  padding-left: 20px;
+  font-size: 18px;
+  line-height: 1.35;
+  counter-increment: ve-proof;
+}
+
+.ve-proof::before {
+  /* yellow proof marker */
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  bottom: 0.12em;
+  width: 4px;
+  background: var(--human-anchor-signal);
+}
+
+.ve-proof::after {
+  /* connector from the spine to the marker */
+  content: '';
+  position: absolute;
+  top: 0.68em;
+  right: calc(100% - 0px);
+  width: calc(var(--ve-a2t) - 0px);
+  height: 2px;
+  margin-right: 0;
+  background: var(--human-anchor-route);
+  box-shadow: 0 0 8px rgb(44 226 245 / 45%);
+}
+
+.ve-proof__n::before {
+  content: counter(ve-proof, decimal-leading-zero);
+  color: var(--human-anchor-route);
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ve-transition {
+  margin: 28px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgb(174 203 208 / 28%);
+  color: var(--human-anchor-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.ve-handoffs {
+  width: 216px;
+  max-width: none;
+  height: 48px;
+  margin: 14px 0 0 calc(-1 * var(--ve-a2t) - 8px);
+  overflow: visible;
+}
+
+.ve-handoffs__track {
+  fill: none;
+  stroke: var(--human-anchor-route);
+  stroke-width: 2;
+  opacity: calc(0.26 + 0.74 * clamp(0, var(--hf), 1));
+}
+
+.ve-handoff-v,
+.ve-handoff {
+  --on: clamp(0, calc(var(--hf) - var(--i) + 1), 1);
+  opacity: calc(0.34 + 0.66 * var(--on));
+}
+
+.ve-handoff__core {
+  fill: var(--human-anchor-signal);
+}
+
+.ve-handoff__halo {
+  fill: none;
+  stroke: var(--human-anchor-route);
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+
+/* Spine node on the identity block (vertical layouts). */
+.ve-identity::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: calc(-1 * var(--ve-a2t) - 6px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--human-anchor-signal);
+  box-shadow:
+    0 0 0 5px rgb(4 25 35 / 90%),
+    0 0 0 6.5px var(--human-anchor-route);
+}
+
+/* The desktop route is hidden in vertical layouts. */
+.ve-route {
+  display: none;
+}
+
+/* ───────── States (default = completed) ───────── */
+
+.ve-identity[data-state='inactive'] :is(.ve-name, .ve-role) {
+  opacity: var(--human-anchor-emphasis-opacity);
+}
+
+.ve-identity[data-state='inactive']::before {
+  background: var(--human-anchor-surface);
+  box-shadow:
+    0 0 0 5px rgb(4 25 35 / 90%),
+    0 0 0 6.5px rgb(44 226 245 / 38%);
+}
+
+.ve-identity[data-state='active']::before {
+  box-shadow:
+    0 0 0 5px rgb(4 25 35 / 90%),
+    0 0 0 6.5px var(--human-anchor-route),
+    0 0 22px 6px rgb(255 255 0 / 38%);
+}
+
+.ve-proof[data-state='inactive'] {
+  opacity: var(--human-anchor-emphasis-opacity);
+}
+
+.ve-proof[data-state='inactive']::before {
+  background: rgb(255 255 0 / 34%);
+}
+
+.ve-proof[data-state='inactive']::after {
+  opacity: 0.28;
+  box-shadow: none;
+}
+
+.ve-proof[data-state='active']::before {
+  box-shadow: 0 0 12px rgb(255 255 0 / 60%);
+}
+
+/* ───────── Tablet: portrait left, identity + proofs right ───────── */
+
+@media (min-width: 768px) {
+  .vlad-experience__stage {
+    padding-top: 96px;
+    padding-bottom: 80px;
+  }
+
+  .ve-title {
+    font-size: clamp(34px, 4.6vw, 48px);
+  }
+
+  .ve-head {
+    max-width: 44rem;
+  }
+
+  .ve-body {
+    --ve-pad: 0px;
+    --ve-a2t: 30px;
+    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    column-gap: 60px;
+    margin-top: 40px;
+    padding-left: 0;
+  }
+
+  .ve-spine {
+    left: calc(300px + 30px - 1px);
+  }
+
+  .ve-portrait {
+    grid-column: 1;
+    grid-row: 1 / span 5;
+    align-self: start;
+    width: 300px;
+    aspect-ratio: 3 / 4;
+  }
+
+  .ve-identity,
+  .ve-proofs,
+  .ve-transition,
+  .ve-handoffs {
+    grid-column: 2;
+  }
+
+  .ve-identity {
+    margin-top: 0;
+  }
+
+  .ve-name {
+    font-size: 28px;
+  }
+
+  .ve-proof {
+    font-size: 19px;
+  }
+}
+
+/* Low-height landscape: gaps reduce, nothing is hidden. */
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 1199px) {
+  .vlad-experience__stage {
+    padding-top: 48px;
+    padding-bottom: 40px;
+  }
+
+  .ve-body {
+    margin-top: 20px;
+  }
+
+  .ve-proofs {
+    margin-top: 16px;
+    gap: 12px;
+  }
+
+  .ve-transition {
+    margin-top: 18px;
+  }
+}
+
+/* ───────── Desktop: stage 1672 × 960, positions in % of the stage ───────── */
+
+@media (min-width: 1200px) {
+  .vlad-experience__stage {
+    --stage-w: 100cqw;
+    container-type: inline-size;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    aspect-ratio: 1672 / 960;
+  }
+
+  .ve-head,
+  .ve-identity,
+  .ve-proofs,
+  .ve-transition {
+    position: absolute;
+    left: 51.02%; /* 853 / 1672 */
+    margin: 0;
+  }
+
+  .ve-body {
+    display: contents;
+  }
+
+  .ve-spine,
+  .ve-handoffs {
+    display: none;
+  }
+
+  .ve-head {
+    top: 10.2%;
+    width: 44%;
+    max-width: none;
+  }
+
+  .ve-eyebrow {
+    padding-top: 1.1cqw;
+    font-size: clamp(13px, 0.9cqw, 16px);
+  }
+
+  .ve-eyebrow::before {
+    width: 5.5cqw;
+    height: 3px;
+  }
+
+  .ve-title {
+    margin-top: 1cqw;
+    font-size: clamp(34px, 3cqw, 56px);
+    line-height: 1.06;
+  }
+
+  .ve-portrait {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 43%;
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+    z-index: var(--human-anchor-z-portrait);
+  }
+
+  .ve-portrait img {
+    object-position: 58% 24%;
+  }
+
+  /* Soft right edge into the environment; face sits well inside the solid area. */
+  .ve-portrait::after {
+    background:
+      linear-gradient(90deg, transparent 80%, var(--universum-bg-navy) 100%),
+      linear-gradient(180deg, var(--universum-bg-navy) 0%, transparent 16%),
+      linear-gradient(180deg, transparent 80%, rgb(4 25 35 / 60%) 100%);
+  }
+
+  .ve-identity {
+    top: 50%;
+    width: 44%;
+  }
+
+  .ve-identity::before {
+    display: none;
+  }
+
+  .ve-name {
+    font-size: clamp(24px, 2cqw, 36px);
+  }
+
+  .ve-role {
+    margin-top: 0.4cqw;
+    font-size: clamp(15px, 1.3cqw, 22px);
+  }
+
+  .ve-proofs {
+    --ve-a2t: 2.5cqw; /* spine x = 808, text x = 853 */
+    top: 63.5%;
+    width: 46%;
+    gap: 1.7cqw;
+  }
+
+  .ve-proof {
+    padding-left: 1.2cqw;
+    font-size: clamp(18px, 1.5cqw, 26px);
+    grid-template-columns: 2.2em 1fr;
+  }
+
+  .ve-proof::after {
+    width: var(--ve-a2t);
+    top: 0.72em;
+  }
+
+  .ve-transition {
+    top: 92.5%;
+    width: 46%;
+    padding-top: 0;
+    border-top: 0;
+    font-size: clamp(13px, 0.88cqw, 15px);
+  }
+
+  /* Veil tuned for the split layout: photo side lighter, copy side deeper. */
+  .ve-veil {
+    background:
+      linear-gradient(180deg, var(--universum-bg-navy) 0%, rgb(6 26 42 / 0%) 26%),
+      linear-gradient(90deg, rgb(4 25 35 / 12%) 0%, rgb(4 25 35 / 58%) 48%, rgb(4 25 35 / 62%) 100%);
+  }
+
+  .ve-route {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: var(--human-anchor-z-route);
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* Route segments: each draws between its own thresholds (--a start, --w width). */
+  .ve-route g[style*='--a'] {
+    --seg: clamp(0, calc((var(--rp) - var(--a)) / var(--w)), 1);
+  }
+
+  .ve-route__track,
+  .ve-route__glow,
+  .ve-route__lit {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ve-route__track {
+    stroke: var(--human-anchor-route);
+    stroke-width: 2;
+    opacity: 0.22;
+  }
+
+  .ve-route__glow,
+  .ve-route__lit {
+    stroke-dasharray: 100;
+    stroke-dashoffset: calc(100 * (1 - var(--seg)));
+  }
+
+  .ve-route__glow {
+    stroke: var(--human-anchor-route);
+    stroke-width: 7;
+    opacity: 0.2;
+    filter: blur(3px);
+  }
+
+  .ve-route__lit {
+    stroke: var(--human-anchor-route);
+    stroke-width: 2.4;
+  }
+
+  /* Responsibility node: inactive → one soft activation glow → settled. */
+  .ve-node__core {
+    fill: var(--human-anchor-signal);
+  }
+
+  .ve-node__ring {
+    fill: none;
+    stroke: var(--human-anchor-signal);
+    stroke-width: 1.5;
+    opacity: 0.55;
+  }
+
+  .ve-node__halo {
+    fill: var(--human-anchor-signal);
+    opacity: 0.1;
+  }
+
+  [data-node='inactive'] .ve-node__core {
+    fill: var(--human-anchor-surface);
+    stroke: var(--human-anchor-route);
+    stroke-width: 1.5;
+  }
+
+  [data-node='inactive'] :is(.ve-node__ring, .ve-node__halo) {
+    opacity: 0.12;
+  }
+
+  [data-node='active'] .ve-node__halo {
+    opacity: 0.34;
+  }
+
+  [data-node='active'] .ve-node__ring {
+    opacity: 0.95;
+  }
+
+  .ve-handoff__halo {
+    stroke-width: 2;
+  }
+
+  .ve-handoff__core {
+    fill: var(--human-anchor-signal);
+  }
+}
+
+/* ───────── Motion: short state transitions only (scroll scrubs the routes) ───────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .vlad-experience[data-enhanced] :is(.ve-name, .ve-role, .ve-proof, .ve-handoff, .ve-handoff-v, .ve-handoffs__track) {
+    transition: opacity var(--human-anchor-local-duration) var(--human-anchor-ease);
+  }
+
+  .vlad-experience[data-enhanced] :is(.ve-node__core, .ve-node__ring, .ve-node__halo) {
+    transition:
+      opacity var(--human-anchor-node-duration) var(--human-anchor-ease),
+      fill var(--human-anchor-node-duration) var(--human-anchor-ease);
+  }
+
+  .vlad-experience[data-enhanced] .ve-proof::before,
+  .vlad-experience[data-enhanced] .ve-proof::after,
+  .vlad-experience[data-enhanced] .ve-identity::before {
+    transition:
+      opacity var(--human-anchor-node-duration) var(--human-anchor-ease),
+      background-color var(--human-anchor-node-duration) var(--human-anchor-ease),
+      box-shadow var(--human-anchor-local-duration) var(--human-anchor-ease);
+  }
+}
+
+/* Reduced motion: always the assembled scene, no transitions or glow. */
+@media (prefers-reduced-motion: reduce) {
+  .vlad-experience {
+    --rp: 1 !important;
+    --hf: 3 !important;
+    --human-anchor-local-duration: 0ms;
+    --human-anchor-node-duration: 0ms;
+  }
+
+  .ve-spine::after,
+  .ve-route__glow,
+  .ve-proof::after,
+  .ve-proof::before,
+  .ve-identity::before {
+    box-shadow: none !important;
+  }
+
+  .ve-route__glow {
+    display: none;
+  }
+}

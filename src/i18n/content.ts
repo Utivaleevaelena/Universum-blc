@@ -262,3 +262,61 @@ export const coordinationScopeContent: Record<Locale, CoordinationScopeContent> 
     ],
   },
 };
+
+// ───────── Block 05 — Human Anchor (vlad-experience) ─────────
+// Source: 03-build-kits/block-05-vlad-experience/content.json v01.
+
+export const vladExperienceProofIds = [
+  'maritime-port',
+  'international-coordination',
+  'enquiry-clarification',
+] as const;
+export type VladExperienceProofId = (typeof vladExperienceProofIds)[number];
+
+export interface VladExperienceProof {
+  id: VladExperienceProofId;
+  label: string;
+}
+
+export interface VladExperienceContent {
+  status: 'draft_from_approved_visual' | 'working_translation_native_review_required';
+  eyebrow: string;
+  title: string;
+  name: string;
+  role: string;
+  /** Exactly three proofs, in the approved order. */
+  proofs: readonly [VladExperienceProof, VladExperienceProof, VladExperienceProof];
+  transitionLabel: string;
+  portraitAlt: string;
+}
+
+export const vladExperienceContent: Record<Locale, VladExperienceContent> = {
+  en: {
+    status: 'draft_from_approved_visual',
+    eyebrow: 'Experience behind the conversation',
+    title: 'Complex routes still need one accountable person.',
+    name: 'Vladislav Slobodenyuk',
+    role: 'Logistics manager',
+    proofs: [
+      { id: 'maritime-port', label: 'Maritime and port operations background' },
+      { id: 'international-coordination', label: 'International, multi-party coordination' },
+      { id: 'enquiry-clarification', label: 'Enquiry review and clarification' },
+    ],
+    transitionLabel: 'See what happens after you send the context',
+    portraitAlt: 'Portrait of Vladislav Slobodenyuk, logistics manager.',
+  },
+  pl: {
+    status: 'working_translation_native_review_required',
+    eyebrow: 'Doświadczenie po drugiej stronie rozmowy',
+    title: 'Złożone trasy nadal potrzebują jednej odpowiedzialnej osoby.',
+    name: 'Vladislav Slobodenyuk',
+    role: 'Menedżer ds. logistyki',
+    proofs: [
+      { id: 'maritime-port', label: 'Doświadczenie w operacjach morskich i portowych' },
+      { id: 'international-coordination', label: 'Międzynarodowa koordynacja wielu stron' },
+      { id: 'enquiry-clarification', label: 'Analiza zapytania i doprecyzowanie szczegółów' },
+    ],
+    transitionLabel: 'Zobacz, co wydarzy się po przesłaniu kontekstu',
+    portraitAlt: 'Portret Vladislava Slobodenyuka, menedżera ds. logistyki.',
+  },
+};

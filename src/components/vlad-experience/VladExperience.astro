@@ -1,0 +1,262 @@
+---
+import { Picture } from 'astro:assets';
+import { vladExperienceContent } from '../../i18n/content';
+import type { Locale } from '../../i18n/routes';
+import '../../styles/vlad-experience.css';
+
+import environment from '../../assets/vlad-experience/human-anchor-environment-background-v01.png';
+import portrait from '../../assets/vlad-experience/vladislav-slobodenyuk-portrait-v01.jpg';
+import HumanAnchorRoute from './HumanAnchorRoute.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = vladExperienceContent[locale];
+
+// ───────── Desktop geometry: stage units 1672 × 960 ─────────
+const W = 1672;
+const H = 960;
+const node = { x: 740, y: 440 };
+const spineX = 808; // the route runs just left of the proof list (text starts at ~853)
+const splitY = 790;
+const handoffY = 856;
+const handoffs = [600, 808, 1010].map((x) => ({ x, y: handoffY }));
+
+// Approved thresholds: entry 0.30, responsibility 0.44, proofs 0.55 / 0.66 / 0.76,
+// exit 0.90, handoffs 1.00. Each segment draws between its start and end.
+const routes = [
+  { id: 'human-anchor-incoming-route', d: `M${spineX} 0 V150 C${spineX} 300 ${node.x} 330 ${node.x} ${node.y}`, a: 0, w: 0.3 },
+  {
+    id: 'human-anchor-feed-route',
+    d: `M${node.x} ${node.y} C${node.x} 520 ${spineX} 520 ${spineX} 600 V${splitY}`,
+    a: 0.44,
+    w: 0.32,
+  },
+  {
+    id: 'human-anchor-outgoing-route',
+    d: `M${spineX} ${splitY} C${spineX} 850 ${handoffs[0].x} 800 ${handoffs[0].x} ${handoffY} M${spineX} ${splitY} V${handoffY} M${spineX} ${splitY} C${spineX} 850 ${handoffs[2].x} 800 ${handoffs[2].x} ${handoffY}`,
+    a: 0.76,
+    w: 0.14,
+  },
+];
+---
+
+<section
+  class="vlad-experience"
+  id="vlad-experience"
+  aria-labelledby="vlad-experience-title"
+  data-content-status={t.status}
+>
+  <!-- Decorative environment (clean plate + quiet grid). -->
+  <div class="ve-backdrop" aria-hidden="true">
+    <Picture
+      class="ve-bg"
+      src={environment}
+      alt=""
+      widths={[768, 1280, 1672]}
+      sizes="(min-width: 1200px) 100vw, 1100px"
+      formats={['avif', 'webp']}
+      fallbackFormat="webp"
+      quality={50}
+      loading="lazy"
+      decoding="async"
+    />
+    <div class="ve-veil"></div>
+    <div class="ve-grid"></div>
+  </div>
+
+  <div class="vlad-experience__stage">
+    <header class="ve-head">
+      <p class="ve-eyebrow">{t.eyebrow}</p>
+      <h2 class="ve-title" id="vlad-experience-title">{t.title}</h2>
+    </header>
+
+    <div class="ve-body">
+      <div class="ve-spine" aria-hidden="true"></div>
+
+      <figure class="ve-portrait">
+        <Picture
+          class="ve-portrait__img"
+          src={portrait}
+          alt={t.portraitAlt}
+          widths={[480, 720, 1208]}
+          sizes="(min-width: 1200px) 720px, (min-width: 768px) 300px, 92vw"
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          quality={55}
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+
+      <div class="ve-identity" id="human-anchor-identity" data-state="completed">
+        <h3 class="ve-name">{t.name}</h3>
+        <p class="ve-role">{t.role}</p>
+      </div>
+
+      <ul class="ve-proofs">
+        {
+          t.proofs.map((p, i) => (
+            <li class="ve-proof" id={`human-anchor-proof-0${i + 1}`} data-proof={p.id} data-state="completed">
+              <span class="ve-proof__n" aria-hidden="true"></span>
+              <span class="ve-proof__text">{p.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="ve-transition">{t.transitionLabel}</p>
+
+      <!-- Vertical (tablet / mobile) fork to the three future handoff points. -->
+      <svg class="ve-handoffs" viewBox="-8 0 216 48" focusable="false" aria-hidden="true">
+        <path class="ve-handoffs__track" d="M0 0 V38 M0 0 C0 24 80 14 80 38 M0 0 C0 30 160 10 160 38"></path>
+        <g class="ve-handoff-v" style="--i:1"><circle class="ve-handoff__halo" cx="0" cy="38" r="9"></circle><circle class="ve-handoff__core" cx="0" cy="38" r="4.5"></circle></g>
+        <g class="ve-handoff-v" style="--i:2"><circle class="ve-handoff__halo" cx="80" cy="38" r="9"></circle><circle class="ve-handoff__core" cx="80" cy="38" r="4.5"></circle></g>
+        <g class="ve-handoff-v" style="--i:3"><circle class="ve-handoff__halo" cx="160" cy="38" r="9"></circle><circle class="ve-handoff__core" cx="160" cy="38" r="4.5"></circle></g>
+      </svg>
+    </div>
+
+    <HumanAnchorRoute routes={routes} node={node} handoffs={handoffs} size={{ w: W, h: H }} />
+  </div>
+</section>
+
+<script>
+  // Scroll-linked responsibility route. Native scroll only: no pinning, no timers, no
+  // continuous loop. One passive scroll + resize listener, at most one DOM write pass
+  // per animation frame, state derived from the actual scroll position (reversible,
+  // fast scroll safe). The portrait is never touched.
+  const section = document.querySelector<HTMLElement>('#vlad-experience');
+  const stage = section?.querySelector<HTMLElement>('.vlad-experience__stage') ?? null;
+  const body = section?.querySelector<HTMLElement>('.ve-body') ?? null;
+  const identity = section?.querySelector<HTMLElement>('.ve-identity') ?? null;
+  const proofs = section
+    ? (Array.from(section.querySelectorAll('.ve-proof')) as HTMLElement[])
+    : [];
+  const transition = section?.querySelector<HTMLElement>('.ve-transition') ?? null;
+  const fork = section?.querySelector<SVGElement>('.ve-handoffs') ?? null;
+
+  if (section && stage && body && identity && transition && fork && proofs.length === 3) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const wide = window.matchMedia('(min-width: 1200px)');
+    // Approved thresholds (desktop).
+    const NODE_END = 0.44;
+    const PS = [0.44, 0.55, 0.66];
+    const PE = [0.55, 0.66, 0.76];
+    const OUT_START = 0.76;
+    const OUT_END = 0.9;
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+    const NODE_START = 0.3;
+
+    let frame = 0;
+    let running = false;
+    let last = '';
+
+    // Map the scroll position onto 0…1 between two document offsets. The end is capped
+    // at the last reachable scroll position so the scene can finish while this is the
+    // last block on the page.
+    const range = (y: number, start: number, end: number) =>
+      end > start ? clamp01((y - start) / (end - start)) : y >= start ? 1 : 0;
+
+    const stateOf = (p: number, from: number, to: number) =>
+      p >= to ? 2 : p >= from ? 1 : 0;
+
+    const compute = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const y = window.scrollY;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+      let p = 1;
+      let node = 2;
+      let pr: number[] = [2, 2, 2];
+      let out = 2;
+      let hf = 3;
+
+      if (wide.matches) {
+        // Desktop: block progress. Starts when the stage top reaches 80% of the
+        // viewport, ends when its bottom reaches 60%.
+        const r = stage.getBoundingClientRect();
+        p = range(y, y + r.top - 0.8 * vh, Math.min(y + r.bottom - 0.6 * vh, maxY));
+        node = stateOf(p, NODE_START, NODE_END);
+        pr = PS.map((s, i) => stateOf(p, s, PE[i]));
+        out = stateOf(p, OUT_START, OUT_END);
+        hf = p >= OUT_END ? Math.min(3, Math.floor(((p - OUT_END) / (1 - OUT_END)) * 3) + 1) : 0;
+      } else {
+        // Tablet / mobile: vertical spine. The line fills down while a reference line
+        // at 60% of the viewport moves through the block; each node reacts when the
+        // line reaches it.
+        const ref = vh * 0.6;
+        const br = body.getBoundingClientRect();
+        p = range(y, y + br.top - ref, Math.min(y + br.top + br.height - ref, maxY));
+        const h = br.height || 1;
+        const f = (el: Element, add = 0) => (el.getBoundingClientRect().top - br.top + add) / h;
+        const fn = f(identity, 11);
+        const fp = proofs.map((li) => f(li, 11));
+        const ft = f(transition, 0);
+        const fh = f(fork, 0);
+        if (p >= 1) {
+          // everything assembled (end of page reached)
+        } else {
+          node = stateOf(p, fn, fp[0]);
+          pr = fp.map((s, i) => stateOf(p, s, i < 2 ? fp[i + 1] : ft));
+          out = stateOf(p, ft, fh);
+          hf = p >= fh ? 3 : 0;
+        }
+      }
+
+      const key = [node, pr.join(''), out, hf].join('|');
+      if (key !== last) {
+        const names = ['inactive', 'active', 'completed'];
+        section.dataset.node = names[node];
+        section.dataset.out = ['inactive', 'drawing', 'complete'][out];
+        section.style.setProperty('--hf', String(hf));
+        identity.dataset.state = names[node];
+        proofs.forEach((li, i) => {
+          li.dataset.state = names[pr[i]];
+        });
+        last = key;
+      }
+      section.style.setProperty('--rp', String(Math.round(p * 1000) / 1000));
+    };
+
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(compute);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      compute();
+      // Enable transitions only after the first state is in place.
+      window.requestAnimationFrame(() => {
+        if (running) section.dataset.enhanced = 'true';
+      });
+    };
+
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      last = '';
+      delete section.dataset.enhanced;
+      delete section.dataset.node;
+      delete section.dataset.out;
+      section.style.removeProperty('--hf');
+      section.style.removeProperty('--rp');
+      identity.dataset.state = 'completed';
+      proofs.forEach((li) => {
+        li.dataset.state = 'completed';
+      });
+    };
+
+    const sync = () => (reduce.matches ? stop() : start());
+    reduce.addEventListener('change', sync);
+    sync();
+  }
+</script>

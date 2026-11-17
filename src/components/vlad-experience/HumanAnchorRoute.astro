@@ -1,0 +1,50 @@
+---
+// Desktop route in stage units (1672 × 960): incoming route → responsibility node →
+// feed line along the proof list → outgoing route → three handoff points.
+// Decorative only: aria-hidden, no text, not focusable.
+interface Seg {
+  id: string;
+  d: string;
+  a: number;
+  w: number;
+}
+interface Props {
+  routes: Seg[];
+  node: { x: number; y: number };
+  handoffs: { x: number; y: number }[];
+  size: { w: number; h: number };
+}
+const { routes, node, handoffs, size } = Astro.props;
+---
+
+<svg class="ve-route" viewBox={`0 0 ${size.w} ${size.h}`} focusable="false" aria-hidden="true">
+  {
+    routes.map((r) => (
+      <g id={r.id} style={`--a:${r.a};--w:${r.w}`}>
+        <path class="ve-route__track" d={r.d}></path>
+        <path class="ve-route__glow" d={r.d} pathLength="100"></path>
+        <path class="ve-route__lit" d={r.d} pathLength="100"></path>
+      </g>
+    ))
+  }
+
+  <g id="human-anchor-responsibility-node" class="ve-node" transform={`translate(${node.x} ${node.y})`}>
+    <circle class="ve-node__halo" r="34"></circle>
+    <circle class="ve-node__ring" r="19"></circle>
+    <circle class="ve-node__core" r="10"></circle>
+  </g>
+
+  {
+    handoffs.map((h, i) => (
+      <g
+        id={`human-anchor-handoff-0${i + 1}`}
+        class="ve-handoff"
+        style={`--i:${i + 1}`}
+        transform={`translate(${h.x} ${h.y})`}
+      >
+        <circle class="ve-handoff__halo" r="15"></circle>
+        <circle class="ve-handoff__core" r="6.5"></circle>
+      </g>
+    ))
+  }
+</svg>
