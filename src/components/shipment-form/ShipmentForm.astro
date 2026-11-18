@@ -1,0 +1,379 @@
+---
+import { shipmentFormContent } from '../../i18n/content';
+import type { Locale } from '../../i18n/routes';
+import '../../styles/shipment-form.css';
+import ArrivalRoute from './ArrivalRoute.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = shipmentFormContent[locale];
+const [consentBefore, consentAfter] = t.consent.label.split('{link}');
+const byId = Object.fromEntries(t.fields.map((f) => [f.id, f]));
+const contactIds = ['name', 'company', 'workEmail', 'phone'] as const;
+const contextIds = ['description', 'timing'] as const;
+---
+
+<section
+  class="shipment-form"
+  id="shipment-form"
+  aria-labelledby="shipment-form-title"
+  data-content-status={t.status}
+>
+  <div class="sf-backdrop" aria-hidden="true"><div class="sf-grid"></div></div>
+
+  <div class="sf-stage">
+    <header class="sf-head">
+      <p class="sf-eyebrow">{t.eyebrow}</p>
+      <h2 class="sf-title" id="shipment-form-title">{t.title}</h2>
+      <p class="sf-reassurance">{t.reassurance}</p>
+      <p class="sf-sla">
+        <svg class="sf-sla__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><path d="M12 6.5V12l3.5 2"></path></svg>
+        {t.sla}
+      </p>
+      <div class="sf-required">
+        <p class="sf-required__label">{t.requiredLabel}</p>
+        <p class="sf-required__list">{t.requiredList}</p>
+        <p class="sf-required__note">{t.optionalNote}</p>
+      </div>
+    </header>
+
+    <div class="sf-panelwrap">
+      <ArrivalRoute />
+      <div class="sf-panel" data-state="ready">
+        <form
+          id="shipment-form-form"
+          class="sf-form"
+          method="post"
+          action="/api/enquiry"
+          data-messages={JSON.stringify({ ...t.validation, summary: t.states.validationSummary, submitting: t.states.submitting })}
+        >
+          <input type="hidden" name="locale" value={locale} />
+          <input type="hidden" name="key" value="" />
+
+          <p class="sf-summary" id="shipment-form-summary" role="alert" tabindex="-1" hidden>{t.states.validationSummary}</p>
+
+          <fieldset class="sf-group">
+            <legend class="sf-legend">{t.groups.contact}</legend>
+            <div class="sf-grid-fields">
+              {
+                contactIds.map((id) => {
+                  const f = byId[id];
+                  return (
+                    <div class="sf-field" data-field={id}>
+                      <label for={`sf-${id}`}>
+                        {f.label}
+                        {f.required ? <span class="sf-req" aria-hidden="true"> *</span> : <span class="sf-opt">{t.optionalLabel}</span>}
+                      </label>
+                      <input
+                        id={`sf-${id}`}
+                        name={id}
+                        type={f.type === 'textarea' ? 'text' : f.type}
+                        autocomplete={f.autocomplete}
+                        placeholder={f.placeholder}
+                        required={f.required}
+                        aria-required={f.required ? 'true' : undefined}
+                        maxlength={id === 'workEmail' ? 254 : id === 'phone' ? 40 : id === 'company' ? 160 : 120}
+                        aria-describedby={`sf-err-${id}`}
+                      />
+                      <p class="sf-error" id={`sf-err-${id}`} hidden />
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </fieldset>
+
+          <fieldset class="sf-group">
+            <legend class="sf-legend">{t.groups.context} <span class="sf-opt">{t.optionalLabel}</span></legend>
+            <div class="sf-grid-fields">
+              {
+                contextIds.map((id) => {
+                  const f = byId[id];
+                  return (
+                    <div class={`sf-field sf-field--${id}`} data-field={id}>
+                      <label for={`sf-${id}`}>
+                        {f.label}
+                        <span class="sf-opt">{t.optionalLabel}</span>
+                      </label>
+                      {id === 'description' ? (
+                        <textarea
+                          id={`sf-${id}`}
+                          name={id}
+                          rows="5"
+                          maxlength="4000"
+                          placeholder={f.placeholder}
+                          autocomplete="off"
+                          aria-describedby={`sf-hint-${id} sf-err-${id}`}
+                        />
+                      ) : (
+                        <input
+                          id={`sf-${id}`}
+                          name={id}
+                          type="text"
+                          maxlength="200"
+                          placeholder={f.placeholder}
+                          autocomplete="off"
+                          aria-describedby={`sf-err-${id}`}
+                        />
+                      )}
+                      {f.hint && <p class="sf-hint" id={`sf-hint-${id}`}>{f.hint}</p>}
+                      <p class="sf-error" id={`sf-err-${id}`} hidden />
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </fieldset>
+
+          <!-- Honeypot: invisible to people and assistive tech, tempting to bots. -->
+          <div class="sf-hp" aria-hidden="true">
+            <label>{t.honeypotLabel}<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+          </div>
+
+          <div class="sf-consent" data-field="consent">
+            <div class="sf-consent__row">
+              <input
+                id="sf-consent"
+                class="sf-check"
+                type="checkbox"
+                name="consent"
+                value="yes"
+                required
+                aria-required="true"
+                aria-describedby="sf-err-consent"
+              />
+              <label for="sf-consent">
+                {consentBefore}<a href={t.consent.privacyHref}>{t.consent.linkText}</a>{consentAfter}
+                <span class="sf-req" aria-hidden="true"> *</span>
+              </label>
+            </div>
+            <p class="sf-error" id="sf-err-consent" hidden />
+          </div>
+
+          <div class="sf-delivery-error" id="shipment-form-error" role="alert" hidden>
+            <h3 tabindex="-1">{t.states.deliveryErrorHeading}</h3>
+            <p>{t.states.deliveryErrorBody}</p>
+            <button type="button" class="sf-retry">{t.states.retry}</button>
+          </div>
+
+          <div class="sf-actions">
+            <p class="sf-note">{t.requiredNote}</p>
+            <div class="sf-submit">
+              <span class="sf-node" aria-hidden="true"><span></span></span>
+              <button type="submit" class="sf-button" data-label={t.submit}>
+                <span class="sf-button__label">{t.submit}</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"></path></svg>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="sf-success" id="shipment-form-success" role="status" hidden>
+          <h3 tabindex="-1">{t.states.successHeading}</h3>
+          <p>{t.states.successBody}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Enhancement only. Without JavaScript the form posts natively to /api/enquiry and the
+  // server answers with a plain localized page. Success is shown only when the server
+  // reports provider-confirmed delivery.
+  const section = document.querySelector<HTMLElement>('#shipment-form');
+  const form = section?.querySelector<HTMLFormElement>('#shipment-form-form') ?? null;
+  const panel = section?.querySelector<HTMLElement>('.sf-panel') ?? null;
+
+  if (section && form && panel) {
+    const msg = JSON.parse(form.dataset.messages ?? '{}') as Record<string, string>;
+    const summary = form.querySelector<HTMLElement>('#shipment-form-summary')!;
+    const errBox = form.querySelector<HTMLElement>('#shipment-form-error')!;
+    const errHeading = errBox.querySelector<HTMLElement>('h3')!;
+    const success = section.querySelector<HTMLElement>('#shipment-form-success')!;
+    const successHeading = success.querySelector<HTMLElement>('h3')!;
+    const button = form.querySelector<HTMLButtonElement>('.sf-button')!;
+    const label = button.querySelector<HTMLElement>('.sf-button__label')!;
+    const keyInput = form.elements.namedItem('key') as HTMLInputElement;
+    const names = ['name', 'company', 'workEmail', 'phone', 'description', 'timing', 'consent'] as const;
+    const EMAIL_RE = /^[^\s@<>(),;:"\\]+@[^\s@<>(),;:"\\]+\.[^\s@<>(),;:"\\]{2,}$/;
+
+    form.noValidate = true; // custom accessible messages replace native bubbles
+    let busy = false;
+    let lastPayload = '';
+    let key = '';
+
+    const fieldEl = (n: string) => form.elements.namedItem(n) as HTMLInputElement | HTMLTextAreaElement | null;
+    const errEl = (n: string) => form.querySelector<HTMLElement>(`#sf-err-${n}`)!;
+
+    const setError = (n: string, code: string | null) => {
+      const el = fieldEl(n);
+      const out = errEl(n);
+      if (!el) return;
+      if (code) {
+        out.textContent = msg[code] ?? msg.summary;
+        out.hidden = false;
+        el.setAttribute('aria-invalid', 'true');
+      } else {
+        out.textContent = '';
+        out.hidden = true;
+        el.removeAttribute('aria-invalid');
+      }
+    };
+
+    const clientErrors = () => {
+      const e: Record<string, string> = {};
+      const get = (n: string) => (fieldEl(n)?.value ?? '').trim();
+      if (!get('name')) e.name = 'nameRequired';
+      if (!get('workEmail')) e.workEmail = 'emailRequired';
+      else if (!EMAIL_RE.test(get('workEmail'))) e.workEmail = 'emailInvalid';
+      if (!(fieldEl('consent') as HTMLInputElement).checked) e.consent = 'consentRequired';
+      return e;
+    };
+
+    const showErrors = (e: Record<string, string>) => {
+      names.forEach((n) => setError(n, e[n] ?? null));
+      const first = names.find((n) => e[n]);
+      summary.hidden = !first;
+      if (first) fieldEl(first)?.focus();
+    };
+
+    const payload = () => {
+      const data: Record<string, unknown> = { locale: (form.elements.namedItem('locale') as HTMLInputElement).value };
+      (['name', 'company', 'workEmail', 'phone', 'description', 'timing', 'website'] as const).forEach((n) => {
+        data[n] = fieldEl(n)?.value ?? '';
+      });
+      data.consent = (fieldEl('consent') as HTMLInputElement).checked;
+      return data;
+    };
+
+    const setBusy = (on: boolean) => {
+      busy = on;
+      button.disabled = on;
+      button.setAttribute('aria-busy', String(on));
+      label.textContent = on ? msg.submitting : (button.dataset.label ?? '');
+      panel.dataset.state = on ? 'submitting' : panel.dataset.state === 'submitting' ? 'ready' : panel.dataset.state;
+    };
+
+    names.forEach((n) => {
+      fieldEl(n)?.addEventListener('input', () => {
+        setError(n, null);
+        if (!names.some((m) => fieldEl(m)?.getAttribute('aria-invalid'))) summary.hidden = true;
+      });
+    });
+
+    const showDeliveryError = () => {
+      panel.dataset.state = 'error';
+      errBox.hidden = false;
+      errHeading.focus();
+    };
+
+    const submit = async () => {
+      if (busy) return;
+      errBox.hidden = true;
+      const e = clientErrors();
+      if (Object.keys(e).length) {
+        showErrors(e);
+        return;
+      }
+      showErrors({});
+      const body = payload();
+      const serialized = JSON.stringify(body);
+      // Same payload → same idempotency key (a retry cannot double-deliver); edited → new key.
+      if (serialized !== lastPayload || !key) key = crypto.randomUUID();
+      lastPayload = serialized;
+      keyInput.value = key;
+      body.key = key;
+
+      setBusy(true);
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 20000);
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = (await res.json().catch(() => null)) as { ok?: boolean; code?: string; errors?: Record<string, string> } | null;
+        if (res.ok && data?.ok === true) {
+          panel.dataset.state = 'sent';
+          section.dataset.sent = 'true';
+          form.hidden = true;
+          success.hidden = false;
+          successHeading.focus();
+        } else if (res.status === 400 && data?.code === 'invalid' && data.errors) {
+          setBusy(false);
+          showErrors(data.errors);
+          return;
+        } else {
+          setBusy(false);
+          showDeliveryError();
+          return;
+        }
+      } catch {
+        setBusy(false);
+        showDeliveryError();
+        return;
+      } finally {
+        window.clearTimeout(timer);
+      }
+      setBusy(false);
+    };
+
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      void submit();
+    });
+    errBox.querySelector('.sf-retry')?.addEventListener('click', () => {
+      void submit();
+    });
+
+    // Entrance route: native-scroll, reversible. One passive listener, one write per frame.
+    const stage = section.querySelector<HTMLElement>('.sf-stage')!;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    let running = false;
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+    const compute = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const top = stage.getBoundingClientRect().top;
+      const y = window.scrollY;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+      const start = y + top - 0.9 * vh;
+      const end = Math.min(y + top - 0.25 * vh, maxY);
+      const p = end > start ? clamp01((y - start) / (end - start)) : y >= start ? 1 : 0;
+      section.style.setProperty('--sp', String(Math.round(p * 1000) / 1000));
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(compute);
+    };
+    const start = () => {
+      if (running) return;
+      running = true;
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      compute();
+      window.requestAnimationFrame(() => {
+        if (running) section.dataset.enhanced = 'true';
+      });
+    };
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      delete section.dataset.enhanced;
+      section.style.removeProperty('--sp');
+    };
+    const sync = () => (reduce.matches ? stop() : start());
+    reduce.addEventListener('change', sync);
+    sync();
+  }
+</script>

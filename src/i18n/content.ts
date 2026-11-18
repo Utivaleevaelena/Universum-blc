@@ -320,3 +320,246 @@ export const vladExperienceContent: Record<Locale, VladExperienceContent> = {
     portraitAlt: 'Portret Vladislava Slobodenyuka, menedżera ds. logistyki.',
   },
 };
+
+// ───────── Block 06 — Clear Handoff (source: 03-build-kits/block-06-next-steps/content.json v01) ─────────
+
+export const nextStepsStepIds = [
+  'available-context',
+  'manager-clarification',
+  'agreed-next-action',
+] as const;
+export type NextStepsStepId = (typeof nextStepsStepIds)[number];
+
+export interface NextStepsStep {
+  id: NextStepsStepId;
+  label: string;
+  description: string;
+}
+
+export interface NextStepsContent {
+  status: 'draft_from_approved_visual' | 'working_translation_native_review_required';
+  eyebrow: string;
+  title: string;
+  reassurance: string;
+  /** Exactly three ordered steps. */
+  steps: readonly [NextStepsStep, NextStepsStep, NextStepsStep];
+  /** First-response promise only; not a quote, route, permit, customs or delivery deadline. */
+  sla: string;
+  /** Live, non-interactive text while the form block is absent. */
+  transitionLabel: string;
+}
+
+export const nextStepsContent: Record<Locale, NextStepsContent> = {
+  en: {
+    status: 'draft_from_approved_visual',
+    eyebrow: 'What happens next',
+    title: 'Start with the context you have.',
+    reassurance: 'A complete brief is not required.',
+    steps: [
+      {
+        id: 'available-context',
+        label: 'Share the context you have',
+        description: 'Send the information you already have. A complete specification is not required.',
+      },
+      {
+        id: 'manager-clarification',
+        label: 'A personal manager reviews and clarifies',
+        description:
+          'A personal manager reviews the enquiry and asks the questions needed to understand the task.',
+      },
+      {
+        id: 'agreed-next-action',
+        label: 'Discuss the route and agree the next action',
+        description:
+          'Once there is enough context, we discuss the route, a possible estimate and a practical next action.',
+      },
+    ],
+    sla: 'First response within one business day.',
+    transitionLabel: 'Next: discuss your shipment',
+  },
+  pl: {
+    status: 'working_translation_native_review_required',
+    eyebrow: 'Co dalej',
+    title: 'Zacznij od kontekstu, który już masz.',
+    reassurance: 'Pełny opis ani gotowa specyfikacja nie są wymagane.',
+    steps: [
+      {
+        id: 'available-context',
+        label: 'Przekaż dostępny kontekst',
+        description: 'Wyślij informacje, które już masz. Pełna specyfikacja nie jest wymagana.',
+      },
+      {
+        id: 'manager-clarification',
+        label: 'Menedżer analizuje i doprecyzowuje',
+        description:
+          'Osobisty menedżer analizuje zapytanie i zadaje pytania potrzebne do zrozumienia zadania.',
+      },
+      {
+        id: 'agreed-next-action',
+        label: 'Omówcie trasę i uzgodnijcie kolejny krok',
+        description:
+          'Po zebraniu wystarczającego kontekstu omawiamy trasę, możliwą wycenę i praktyczny kolejny krok.',
+      },
+    ],
+    sla: 'Pierwsza odpowiedź w ciągu jednego dnia roboczego.',
+    transitionLabel: 'Dalej: omów swoją przesyłkę',
+  },
+};
+
+// ───────── Block 07 — Shipment form ─────────
+// Source: 03-build-kits/block-07-shipment-form/content.json + IMPLEMENTATION-DECISIONS.md.
+// Consent/privacy wording is a draft for owner/legal review; Polish needs native review.
+
+export const shipmentFormFieldIds = ['name', 'company', 'workEmail', 'phone', 'description', 'timing'] as const;
+export type ShipmentFormFieldId = (typeof shipmentFormFieldIds)[number];
+
+export interface ShipmentFormField {
+  id: ShipmentFormFieldId;
+  label: string;
+  required: boolean;
+  type: 'text' | 'email' | 'tel' | 'textarea';
+  autocomplete: string;
+  placeholder: string;
+  hint?: string;
+}
+
+export interface ShipmentFormContent {
+  status: string;
+  eyebrow: string;
+  title: string;
+  reassurance: string;
+  sla: string;
+  requiredLabel: string;
+  requiredList: string;
+  optionalNote: string;
+  requiredNote: string;
+  optionalLabel: string;
+  groups: { contact: string; context: string };
+  fields: ShipmentFormField[];
+  consent: { label: string; linkText: string; privacyHref: string };
+  submit: string;
+  honeypotLabel: string;
+  states: {
+    submitting: string;
+    validationSummary: string;
+    successHeading: string;
+    successBody: string;
+    deliveryErrorHeading: string;
+    deliveryErrorBody: string;
+    retry: string;
+  };
+  validation: {
+    nameRequired: string;
+    emailRequired: string;
+    emailInvalid: string;
+    consentRequired: string;
+    tooLong: string;
+  };
+}
+
+export const shipmentFormContent: Record<Locale, ShipmentFormContent> = {
+  en: {
+    status: 'draft_for_owner_legal_review',
+    eyebrow: 'Discuss your shipment',
+    title: 'Start with what you know.',
+    reassurance: 'Share the available context. A personal manager will clarify the rest.',
+    sla: 'First response within one business day.',
+    requiredLabel: 'Required to start',
+    requiredList: 'Name · Work email · Privacy notice',
+    optionalNote: 'Everything else can be added if available.',
+    requiredNote: 'Required fields are marked *',
+    optionalLabel: 'Optional',
+    groups: { contact: 'Contact', context: 'Shipment context' },
+    fields: [
+      { id: 'name', label: 'Name', required: true, type: 'text', autocomplete: 'name', placeholder: 'Your name' },
+      { id: 'company', label: 'Company', required: false, type: 'text', autocomplete: 'organization', placeholder: 'Company name' },
+      { id: 'workEmail', label: 'Work email', required: true, type: 'email', autocomplete: 'email', placeholder: 'name@company.com' },
+      { id: 'phone', label: 'Phone', required: false, type: 'tel', autocomplete: 'tel', placeholder: '+48' },
+      {
+        id: 'description',
+        label: 'Shipment / project description',
+        required: false,
+        type: 'textarea',
+        autocomplete: 'off',
+        placeholder: 'What are you planning to move?',
+        hint: 'Share only what you know today.',
+      },
+      { id: 'timing', label: 'Indicative timing', required: false, type: 'text', autocomplete: 'off', placeholder: 'When might it happen?' },
+    ],
+    consent: {
+      label: 'I have read the {link} and understand that my data will be used to respond to this enquiry.',
+      linkText: 'privacy notice',
+      privacyHref: '/privacy',
+    },
+    submit: 'Send enquiry',
+    honeypotLabel: 'Leave this field empty',
+    states: {
+      submitting: 'Sending…',
+      validationSummary: 'Check the marked fields.',
+      successHeading: 'Your enquiry has been received.',
+      successBody: 'A personal manager will respond within one business day.',
+      deliveryErrorHeading: 'We could not send your enquiry.',
+      deliveryErrorBody: 'Your information is still here — please try again.',
+      retry: 'Try again',
+    },
+    validation: {
+      nameRequired: 'Enter your name.',
+      emailRequired: 'Enter your work email.',
+      emailInvalid: 'Enter a valid email address.',
+      consentRequired: 'Confirm that you have read the privacy notice.',
+      tooLong: 'This text is too long.',
+    },
+  },
+  pl: {
+    status: 'working_translation_native_review_required',
+    eyebrow: 'Omów swoją przesyłkę',
+    title: 'Zacznij od tego, co już wiesz.',
+    reassurance: 'Przekaż dostępny kontekst. Menedżer pomoże doprecyzować pozostałe informacje.',
+    sla: 'Pierwsza odpowiedź w ciągu jednego dnia roboczego.',
+    requiredLabel: 'Wymagane na start',
+    requiredList: 'Imię i nazwisko · E-mail służbowy · Informacja o prywatności',
+    optionalNote: 'Pozostałe informacje możesz dodać, jeśli je masz.',
+    requiredNote: 'Pola wymagane są oznaczone *',
+    optionalLabel: 'Opcjonalne',
+    groups: { contact: 'Kontakt', context: 'Kontekst przesyłki' },
+    fields: [
+      { id: 'name', label: 'Imię i nazwisko', required: true, type: 'text', autocomplete: 'name', placeholder: 'Imię i nazwisko' },
+      { id: 'company', label: 'Firma', required: false, type: 'text', autocomplete: 'organization', placeholder: 'Nazwa firmy' },
+      { id: 'workEmail', label: 'E-mail służbowy', required: true, type: 'email', autocomplete: 'email', placeholder: 'imie@firma.pl' },
+      { id: 'phone', label: 'Telefon', required: false, type: 'tel', autocomplete: 'tel', placeholder: '+48' },
+      {
+        id: 'description',
+        label: 'Opis przesyłki lub projektu',
+        required: false,
+        type: 'textarea',
+        autocomplete: 'off',
+        placeholder: 'Co planujesz przetransportować?',
+        hint: 'Przekaż tylko informacje, które masz teraz.',
+      },
+      { id: 'timing', label: 'Orientacyjny termin', required: false, type: 'text', autocomplete: 'off', placeholder: 'Kiedy transport może się odbyć?' },
+    ],
+    consent: {
+      label: 'Zapoznałem/-am się z {link} i wiem, że moje dane zostaną wykorzystane do odpowiedzi na to zapytanie.',
+      linkText: 'informacją o prywatności',
+      privacyHref: '/pl/polityka-prywatnosci',
+    },
+    submit: 'Wyślij zapytanie',
+    honeypotLabel: 'Zostaw to pole puste',
+    states: {
+      submitting: 'Wysyłanie…',
+      validationSummary: 'Sprawdź oznaczone pola.',
+      successHeading: 'Otrzymaliśmy Twoje zapytanie.',
+      successBody: 'Menedżer odpowie w ciągu jednego dnia roboczego.',
+      deliveryErrorHeading: 'Nie udało się wysłać zapytania.',
+      deliveryErrorBody: 'Twoje dane nadal są w formularzu — spróbuj ponownie.',
+      retry: 'Spróbuj ponownie',
+    },
+    validation: {
+      nameRequired: 'Podaj imię i nazwisko.',
+      emailRequired: 'Podaj służbowy adres e-mail.',
+      emailInvalid: 'Podaj poprawny adres e-mail.',
+      consentRequired: 'Potwierdź zapoznanie się z informacją o prywatności.',
+      tooLong: 'Ten tekst jest zbyt długi.',
+    },
+  },
+};

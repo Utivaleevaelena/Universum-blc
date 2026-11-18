@@ -1,0 +1,194 @@
+---
+import { nextStepsContent } from '../../i18n/content';
+import type { Locale } from '../../i18n/routes';
+import '../../styles/next-steps.css';
+import ClearHandoffRoute from './ClearHandoffRoute.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = nextStepsContent[locale];
+---
+
+<section class="next-steps" id="next-steps" aria-labelledby="next-steps-title" data-content-status={t.status}>
+  <div class="ns-backdrop" aria-hidden="true">
+    <div class="ns-grid"></div>
+  </div>
+
+  <div class="next-steps__stage">
+    <header class="ns-head">
+      <p class="ns-eyebrow">{t.eyebrow}</p>
+      <h2 class="ns-title" id="next-steps-title">{t.title}</h2>
+      <p class="ns-reassurance">{t.reassurance}</p>
+    </header>
+
+    <div class="ns-body">
+      <div class="ns-spine" aria-hidden="true"></div>
+
+      <!-- Vertical (tablet / mobile): three short feeders merging into the spine. -->
+      <svg class="ns-feeders" viewBox="0 0 96 40" focusable="false" aria-hidden="true">
+        <path class="ns-feeders__track" d="M0 0 V40 M48 0 V8 C48 24 0 20 0 40 M96 0 V8 C96 24 0 20 0 40"></path>
+        <circle class="ns-feeders__dot" cx="0" cy="4" r="3.5"></circle>
+        <circle class="ns-feeders__dot" cx="48" cy="4" r="3.5"></circle>
+        <circle class="ns-feeders__dot" cx="96" cy="4" r="3.5"></circle>
+      </svg>
+
+      <ol class="ns-steps" role="list">
+        {
+          t.steps.map((s, i) => (
+            <li class="ns-step" id={`next-steps-step-0${i + 1}`} data-step={s.id} data-state="completed">
+              <span class="ns-step__n" aria-hidden="true"></span>
+              <h3 class="ns-step__label">{s.label}</h3>
+              <p class="ns-step__desc">{s.description}</p>
+              {i === 1 && (
+                <p class="ns-sla">
+                  <span id="next-steps-sla-accent" class="ns-sla__rule" aria-hidden="true" />
+                  {t.sla}
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="ns-transition"><a class="ns-transition__link" href="#shipment-form">{t.transitionLabel}</a></p>
+    </div>
+
+    <ClearHandoffRoute />
+  </div>
+</section>
+
+<script>
+  // Scroll-linked handoff route. Native scroll only: no pinning, no timers, no continuous
+  // loop. One passive scroll + resize listener, at most one DOM write pass per frame,
+  // state derived from the real scroll position (reversible, fast-scroll safe).
+  const section = document.querySelector<HTMLElement>('#next-steps');
+  const stage = section?.querySelector<HTMLElement>('.next-steps__stage') ?? null;
+  const body = section?.querySelector<HTMLElement>('.ns-body') ?? null;
+  const steps = section ? (Array.from(section.querySelectorAll('.ns-step')) as HTMLElement[]) : [];
+  const transition = section?.querySelector<HTMLElement>('.ns-transition') ?? null;
+  const sla = section?.querySelector<HTMLElement>('.ns-sla') ?? null;
+
+  if (section && stage && body && transition && sla && steps.length === 3) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const wide = window.matchMedia('(min-width: 1200px)');
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+    const NAMES = ['inactive', 'active', 'completed'];
+    const PH = ['inactive', 'drawing', 'complete'];
+
+    // Approved thresholds (ANIMATION-SCENARIO.md), desktop.
+    const TEXT: [number, number][] = [
+      [0.18, 0.38], // Step 01 emphasis
+      [0.38, 0.67], // Step 02 emphasis (branch + SLA inside)
+      [0.67, 0.88], // Step 03 emphasis
+    ];
+    const NODE: [number, number][] = [
+      [0.3, 0.38],
+      [0.46, 0.67],
+      [0.8, 0.88],
+    ];
+
+    let frame = 0;
+    let running = false;
+    let last = '';
+
+    const range = (y: number, start: number, end: number) =>
+      end > start ? clamp01((y - start) / (end - start)) : y >= start ? 1 : 0;
+    const stateOf = (p: number, from: number, to: number) => (p >= to ? 2 : p >= from ? 1 : 0);
+    const phaseOf = (p: number, from: number, to: number) => (p >= to ? 2 : p > from ? 1 : 0);
+
+    const compute = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const y = window.scrollY;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+      let p = 1;
+      let text = [2, 2, 2];
+      let node = [2, 2, 2];
+      let branch = 2;
+      let slaOn = 1;
+      let exit = 2;
+
+      if (wide.matches) {
+        // Stage top at 80% of the viewport → stage bottom at 60% (capped at the page end).
+        const r = stage.getBoundingClientRect();
+        p = range(y, y + r.top - 0.8 * vh, Math.min(y + r.bottom - 0.6 * vh, maxY));
+        text = TEXT.map(([a, b]) => stateOf(p, a, b));
+        node = NODE.map(([a, b]) => stateOf(p, a, b));
+        branch = phaseOf(p, 0.52, 0.62);
+        slaOn = p >= 0.62 ? 1 : 0;
+        exit = phaseOf(p, 0.88, 1);
+      } else {
+        // Tablet / mobile: a reference line at 60% of the viewport moves down the spine.
+        const ref = vh * 0.6;
+        const br = body.getBoundingClientRect();
+        p = range(y, y + br.top - ref, Math.min(y + br.top + br.height - ref, maxY));
+        if (p < 1) {
+          const h = br.height || 1;
+          const f = (el: Element, add = 0) => (el.getBoundingClientRect().top - br.top + add) / h;
+          const fs = steps.map((li) => f(li, 9));
+          const fl = f(sla, 0);
+          const ft = f(transition, 0);
+          const ends = [fs[1], fs[2], ft];
+          text = fs.map((s, i) => stateOf(p, s, ends[i]));
+          node = fs.map((s, i) => stateOf(p, s, ends[i]));
+          branch = phaseOf(p, fs[1], fl);
+          slaOn = p >= fl ? 1 : 0;
+          exit = phaseOf(p, ft, 1);
+        }
+      }
+
+      const key = [text.join(''), node.join(''), branch, slaOn, exit].join('|');
+      if (key !== last) {
+        steps.forEach((li, i) => {
+          li.dataset.state = NAMES[text[i]];
+        });
+        section.dataset.n1 = NAMES[node[0]];
+        section.dataset.n2 = NAMES[node[1]];
+        section.dataset.n3 = NAMES[node[2]];
+        section.dataset.branch = PH[branch];
+        section.dataset.sla = slaOn ? 'active' : 'inactive';
+        section.dataset.exit = PH[exit];
+        last = key;
+      }
+      section.style.setProperty('--rp', String(Math.round(p * 1000) / 1000));
+    };
+
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(compute);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      compute();
+      // Transitions are enabled only after the first state is in place.
+      window.requestAnimationFrame(() => {
+        if (running) section.dataset.enhanced = 'true';
+      });
+    };
+
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      last = '';
+      for (const k of ['enhanced', 'n1', 'n2', 'n3', 'branch', 'sla', 'exit']) delete section.dataset[k];
+      section.style.removeProperty('--rp');
+      steps.forEach((li) => {
+        li.dataset.state = 'completed';
+      });
+    };
+
+    const sync = () => (reduce.matches ? stop() : start());
+    reduce.addEventListener('change', sync);
+    sync();
+  }
+</script>

@@ -1,0 +1,79 @@
+---
+// Desktop route in stage units (1672 × 941): three incoming handoffs converge into one
+// route → three step nodes → one clarification branch → quiet exit corridor.
+// Decorative only: aria-hidden, no text, not focusable. All geometry is local SVG.
+const W = 1672;
+const H = 941;
+
+const nodes = [
+  { id: 'next-steps-node-01', x: 700, y: 330, main: false },
+  { id: 'next-steps-node-02', x: 920, y: 520, main: true },
+  { id: 'next-steps-node-03', x: 1150, y: 725, main: false },
+];
+
+// Every segment draws between its start (--a) and start + width (--w) of block progress.
+const incoming = [
+  { id: 'next-steps-incoming-01', d: 'M600 36 V78 C600 130 760 150 832 192', x: 600 },
+  { id: 'next-steps-incoming-02', d: 'M835 0 V176', x: 835 },
+  { id: 'next-steps-incoming-03', d: 'M1070 36 V78 C1070 130 910 150 838 192', x: 1070 },
+];
+const route = [
+  { d: 'M835 176 C835 240 700 250 700 330', a: 0.18, w: 0.2 },
+  { d: 'M700 330 C700 420 920 420 920 520', a: 0.38, w: 0.14 },
+  { d: 'M920 520 C920 640 960 725 1150 725', a: 0.67, w: 0.21 },
+];
+const exit = { d: 'M1150 725 C1150 790 1300 805 1440 822', a: 0.88, w: 0.12 };
+const branch = { d: 'M920 520 C885 552 858 580 826 598', a: 0.52, w: 0.1 };
+---
+
+<svg class="ns-route" viewBox={`0 0 ${W} ${H}`} focusable="false" aria-hidden="true">
+  {
+    incoming.map((r) => (
+      <g id={r.id} class="ns-seg" style="--a:0;--w:0.18">
+        <path class="ns-track" d={r.d}></path>
+        <path class="ns-glow" d={r.d} pathLength="100"></path>
+        <path class="ns-lit" d={r.d} pathLength="100"></path>
+        <circle class="ns-incoming-dot" cx={r.x} cy="36" r="6"></circle>
+      </g>
+    ))
+  }
+
+  <g id="next-steps-route">
+    {
+      route.map((r) => (
+        <g class="ns-seg" style={`--a:${r.a};--w:${r.w}`}>
+          <path class="ns-track" d={r.d}></path>
+          <path class="ns-glow" d={r.d} pathLength="100"></path>
+          <path class="ns-lit" d={r.d} pathLength="100"></path>
+        </g>
+      ))
+    }
+  </g>
+
+  <g id="next-steps-context-document" class="ns-document" transform="translate(595 347)">
+    <path d="M0 0 H38 L54 16 V68 H0 Z M38 0 V16 H54 M13 30 H41 M13 42 H41 M13 54 H29"></path>
+  </g>
+
+  <g id="next-steps-clarification-branch" class="ns-seg ns-branch" style={`--a:${branch.a};--w:${branch.w}`}>
+    <path class="ns-track" d={branch.d}></path>
+    <path class="ns-lit" d={branch.d} pathLength="100"></path>
+  </g>
+  <circle id="next-steps-response-point" class="ns-response" cx="820" cy="601" r="5.5"></circle>
+
+  <g id="next-steps-exit-corridor" class="ns-seg ns-exit" style={`--a:${exit.a};--w:${exit.w}`}>
+    <path class="ns-track" d={exit.d}></path>
+    <path class="ns-glow" d={exit.d} pathLength="100"></path>
+    <path class="ns-lit" d={exit.d} pathLength="100"></path>
+    <path class="ns-arrow" d="M1424 836 L1448 823 L1432 805"></path>
+  </g>
+
+  {
+    nodes.map((n) => (
+      <g id={n.id} class={n.main ? 'ns-node ns-node--main' : 'ns-node'} transform={`translate(${n.x} ${n.y})`}>
+        <circle class="ns-node__halo" r={n.main ? 38 : 30}></circle>
+        <circle class="ns-node__ring" r={n.main ? 20 : 17}></circle>
+        <circle class="ns-node__core" r={n.main ? 10 : 8}></circle>
+      </g>
+    ))
+  }
+</svg>

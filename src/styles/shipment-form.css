@@ -1,0 +1,681 @@
+/* Block 07 — Shipment form (Arrival Node). Breakpoints: mobile < 768, tablet 768–1199,
+   desktop >= 1200. Extends the global tokens. The default is the assembled state, so
+   no-JS and reduced motion show the complete route. Zero raster assets. */
+
+.shipment-form {
+  --sf-route: #2ce2f5;
+  --sf-signal: var(--universum-signal-yellow, #ffff00);
+  --sf-ink: var(--universum-text-primary, #fff);
+  --sf-muted: #c6d5dc;
+  --sf-surface: #0b2937;
+  --sf-surface-deep: #071f2e;
+  --sf-border: rgb(156 197 206 / 62%);
+  --sf-error: #ff8a70;
+  --sf-field-h: 58px;
+  --sf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sp: 1; /* entrance route progress 0…1 (script overrides only after init) */
+
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  scroll-margin-top: 0;
+  background:
+    linear-gradient(180deg, #041923 0%, rgb(4 25 35 / 0%) 18%),
+    radial-gradient(90% 70% at 72% 55%, #0a3340 0%, transparent 72%),
+    var(--universum-bg-navy);
+  color: var(--sf-ink);
+}
+
+.sf-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sf-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image:
+    linear-gradient(rgb(44 226 245 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(44 226 245 / 5%) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+}
+
+.sf-stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 48px;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 72px var(--universum-gutter) 88px;
+}
+
+/* ───────── Head ───────── */
+
+.sf-head {
+  max-width: 36rem;
+}
+
+.sf-eyebrow {
+  position: relative;
+  margin: 0;
+  padding-top: 14px;
+  color: var(--sf-route);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.sf-eyebrow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 3px;
+  background: var(--sf-route);
+}
+
+.sf-title {
+  margin: 14px 0 0;
+  font-size: clamp(34px, 9vw, 48px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.sf-reassurance {
+  margin: 20px 0 0;
+  color: var(--sf-muted);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.sf-sla {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 0;
+  color: var(--sf-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.sf-sla__icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: var(--sf-signal);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.sf-required {
+  margin-top: 36px;
+  padding-top: 16px;
+  border-top: 1px solid rgb(174 203 208 / 28%);
+}
+
+.sf-required__label {
+  margin: 0;
+  color: var(--sf-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sf-required__list {
+  margin: 8px 0 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.sf-required__note {
+  margin: 10px 0 0;
+  color: var(--sf-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ───────── Panel + route (mobile first: slim left spine) ───────── */
+
+.sf-panelwrap {
+  position: relative;
+  min-width: 0;
+  padding-left: 22px;
+}
+
+.sf-route {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgb(44 226 245 / 55%));
+}
+
+.sf-route__in {
+  display: none;
+}
+
+.sf-route__rail {
+  position: absolute;
+  top: 0;
+  bottom: 40px;
+  left: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgb(44 226 245 / 25%), var(--sf-route) 18%);
+}
+
+.sf-panel {
+  position: relative;
+  min-width: 0;
+  padding: 24px 20px 28px;
+  border: 1px solid var(--sf-border);
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--sf-surface) 0%, var(--sf-surface-deep) 100%);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 28%);
+}
+
+.sf-form {
+  display: grid;
+  gap: 28px;
+}
+
+.sf-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sf-legend {
+  float: left;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 0;
+  color: var(--sf-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sf-grid-fields {
+  display: grid;
+  clear: both;
+  gap: 20px 24px;
+}
+
+.sf-field {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sf-field label {
+  color: var(--sf-ink);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.sf-req {
+  color: var(--sf-signal);
+}
+
+.sf-opt {
+  margin-left: 8px;
+  color: #a9c1c9;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sf-field input,
+.sf-field textarea {
+  width: 100%;
+  min-height: var(--sf-field-h);
+  padding: 0 18px;
+  border: 1px solid var(--sf-border);
+  border-radius: 2px;
+  background: var(--sf-surface-deep);
+  color: var(--sf-ink);
+  font: inherit;
+  font-size: 17px;
+}
+
+.sf-field textarea {
+  min-height: 148px;
+  padding: 16px 18px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.sf-field input::placeholder,
+.sf-field textarea::placeholder {
+  color: #8fa9b3;
+  opacity: 1;
+}
+
+.sf-field input:hover,
+.sf-field textarea:hover {
+  border-color: #b8dbe2;
+}
+
+.sf-field input:focus-visible,
+.sf-field textarea:focus-visible,
+.sf-check:focus-visible {
+  border-color: var(--sf-route);
+  outline: var(--universum-focus-width, 3px) solid #fff;
+  outline-offset: 2px;
+  box-shadow: inset 4px 0 0 var(--sf-route);
+}
+
+.sf-field [aria-invalid='true'] {
+  border-color: var(--sf-error);
+  box-shadow: inset 4px 0 0 var(--sf-error);
+}
+
+.sf-hint {
+  margin: 0;
+  color: var(--sf-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sf-error {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  color: var(--sf-error);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.sf-error[hidden],
+.sf-summary[hidden],
+.sf-delivery-error[hidden],
+.sf-success[hidden] {
+  display: none;
+}
+
+.sf-error::before {
+  content: '!';
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--sf-error);
+  color: var(--sf-surface-deep);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.sf-summary {
+  margin: 0;
+  padding: 12px 16px;
+  border-left: 4px solid var(--sf-error);
+  background: rgb(255 138 112 / 10%);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Honeypot — off-screen, not display:none, so naive bots still fill it. */
+.sf-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.sf-consent__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 44px;
+}
+
+.sf-check {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 3px 0 0;
+  accent-color: var(--sf-signal);
+}
+
+.sf-consent label {
+  color: var(--sf-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.sf-consent a {
+  color: var(--sf-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sf-consent .sf-error {
+  margin-top: 8px;
+  padding-left: 38px;
+}
+
+.sf-delivery-error,
+.sf-success {
+  padding: 18px 20px;
+  border-left: 4px solid var(--sf-error);
+  background: rgb(255 138 112 / 10%);
+}
+
+.sf-delivery-error h3,
+.sf-success h3 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.sf-delivery-error p,
+.sf-success p {
+  margin: 8px 0 0;
+  color: var(--sf-muted);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.sf-success {
+  border-left-color: var(--sf-signal);
+  background: rgb(255 255 0 / 8%);
+}
+
+.sf-delivery-error h3:focus-visible,
+.sf-success h3:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+.sf-retry {
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 0 22px;
+  border: 2px solid var(--sf-ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sf-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.sf-retry:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.sf-actions {
+  display: grid;
+  gap: 22px;
+}
+
+.sf-note {
+  margin: 0;
+  color: var(--sf-muted);
+  font-size: 14px;
+}
+
+.sf-submit {
+  position: relative;
+}
+
+.sf-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: var(--sf-field-h);
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sf-signal);
+  color: var(--universum-bg-navy);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 200ms var(--sf-ease);
+}
+
+.sf-button:hover {
+  filter: brightness(1.06);
+}
+
+.sf-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.sf-button svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sf-button:disabled {
+  cursor: progress;
+  filter: saturate(0.6) brightness(0.9);
+}
+
+/* Destination node: rests beside the submit action. */
+.sf-node {
+  position: absolute;
+  top: -17px;
+  right: 54px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--sf-signal);
+  border-radius: 50%;
+  background: var(--universum-bg-navy);
+  box-shadow: 0 0 0 8px rgb(255 255 0 / 14%);
+  pointer-events: none;
+  transition: box-shadow 220ms var(--sf-ease);
+}
+
+.sf-node span {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--sf-signal);
+}
+
+.sf-panel[data-state='submitting'] .sf-node {
+  box-shadow: 0 0 0 12px rgb(255 255 0 / 24%);
+}
+
+.sf-panel[data-state='error'] .sf-node span {
+  background: transparent;
+}
+
+.sf-panel[data-state='sent'] .sf-node {
+  box-shadow: 0 0 0 14px rgb(255 255 0 / 22%);
+}
+
+/* ───────── Tablet ───────── */
+
+@media (min-width: 768px) {
+  .sf-stage {
+    padding-block: 88px 104px;
+  }
+
+  .sf-title {
+    font-size: 52px;
+  }
+
+  .sf-reassurance {
+    font-size: 20px;
+  }
+
+  .sf-panelwrap {
+    padding-left: 28px;
+  }
+
+  .sf-route__rail {
+    left: 6px;
+  }
+
+  .sf-panel {
+    padding: 32px 32px 36px;
+  }
+
+  .sf-grid-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sf-field--description {
+    grid-column: 1 / -1;
+  }
+
+  .sf-actions {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+    align-items: end;
+  }
+
+  .sf-note {
+    align-self: end;
+  }
+}
+
+/* ───────── Desktop ───────── */
+
+@media (min-width: 1200px) {
+  .sf-stage {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 88px;
+    padding-block: 120px 120px;
+  }
+
+  .sf-head {
+    align-self: start;
+    padding-top: 48px;
+  }
+
+  .sf-title {
+    font-size: clamp(48px, 4.6vw, 72px);
+  }
+
+  .sf-panelwrap {
+    padding-left: 0;
+  }
+
+  .sf-panel {
+    padding: 40px 40px 44px;
+  }
+
+  /* Route: enters from the top (Block 06 exit), wraps the panel's left side, ends at the
+     submit action. */
+  .sf-route__in {
+    position: absolute;
+    display: block;
+    right: 24%;
+    bottom: calc(100% + 25px);
+    width: 56px;
+    height: 70px;
+    border-right: 3px solid var(--sf-route);
+    border-bottom: 3px solid var(--sf-route);
+    border-bottom-right-radius: 56px;
+  }
+
+  .sf-route__in::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: -9px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--sf-signal);
+  }
+
+  .sf-route__rail {
+    top: -28px;
+    right: calc(24% + 56px);
+    bottom: 76px;
+    left: -36px;
+    width: auto;
+    border-top: 3px solid var(--sf-route);
+    border-left: 3px solid var(--sf-route);
+    border-radius: 64px 0 0 0;
+    background: none;
+  }
+
+  .sf-route__rail::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: -3px;
+    width: 40px;
+    height: 40px;
+    border-bottom: 3px solid var(--sf-route);
+    border-left: 3px solid var(--sf-route);
+    border-radius: 0 0 0 40px;
+  }
+}
+
+/* Low-height landscape phones/tablets: keep the form a simple stack. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .sf-stage {
+    padding-block: 48px 56px;
+  }
+}
+
+/* ───────── Motion (only when enhanced and allowed) ───────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .shipment-form[data-enhanced] .sf-route__in {
+    clip-path: inset(0 0 calc((1 - clamp(0, var(--sp) / 0.3, 1)) * 100%) 0);
+  }
+
+  .shipment-form[data-enhanced] .sf-route__rail {
+    clip-path: inset(0 0 calc((1 - clamp(0, (var(--sp) - 0.3) / 0.7, 1)) * 100%) 0);
+  }
+
+  .shipment-form[data-enhanced] .sf-node {
+    opacity: clamp(0, (var(--sp) - 0.8) / 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-node,
+  .sf-button {
+    transition: none;
+  }
+}

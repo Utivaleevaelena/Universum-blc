@@ -1,0 +1,725 @@
+/* Block 06 — Clear Handoff. Breakpoints: mobile < 768, tablet 768–1199, desktop >= 1200.
+   Extends the global tokens (tokens.css); block tokens come from the approved build-kit
+   DESIGN-TOKENS.css. Defaults are the assembled final state, so no-JS, reduced motion and
+   a failed enhancement all show the complete composition. Zero raster assets. */
+
+.next-steps {
+  --next-steps-route: #2ce2f5;
+  --next-steps-signal: var(--universum-signal-yellow, #ffff00);
+  --next-steps-ink: var(--universum-text-primary, #f7fbfc);
+  --next-steps-muted: #aecbd0;
+  --next-steps-surface: #07303d;
+  --next-steps-surface-deep: #041923;
+
+  --next-steps-inactive-opacity: 0.34;
+  --next-steps-emphasis-opacity: 0.76;
+  --next-steps-complete-opacity: 1;
+  --next-steps-local-duration: 240ms;
+  --next-steps-node-duration: 220ms;
+  --next-steps-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --next-steps-z-background: 0;
+  --next-steps-z-route: 1;
+  --next-steps-z-marks: 2;
+  --next-steps-z-content: 3;
+
+  /* Block progress 0…1. The script overrides it inline only after successful init. */
+  --rp: 1;
+
+  --ns-pad: 36px; /* body inset that holds the vertical spine */
+
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  scroll-margin-top: 0;
+  background:
+    linear-gradient(180deg, var(--next-steps-surface-deep) 0%, rgb(4 25 35 / 0%) 22%),
+    radial-gradient(100% 62% at 66% 42%, var(--next-steps-surface) 0%, transparent 70%),
+    var(--universum-bg-navy);
+  color: var(--next-steps-ink);
+}
+
+/* ───────── Backdrop (CSS only) ───────── */
+
+.ns-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: var(--next-steps-z-background);
+  pointer-events: none;
+}
+
+.ns-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image:
+    linear-gradient(rgb(44 226 245 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(44 226 245 / 5%) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+}
+
+/* ───────── Stage + head (mobile first) ───────── */
+
+.next-steps__stage {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 72px var(--universum-gutter) 72px;
+}
+
+.ns-head {
+  position: relative;
+  z-index: var(--next-steps-z-content);
+  max-width: 36rem;
+}
+
+.ns-eyebrow {
+  position: relative;
+  margin: 0;
+  padding-top: 14px;
+  color: var(--next-steps-route);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.ns-eyebrow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 3px;
+  background: var(--next-steps-route);
+}
+
+.ns-title {
+  margin: 12px 0 0;
+  font-size: clamp(28px, 8vw, 40px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.ns-reassurance {
+  margin: 16px 0 0;
+  color: var(--next-steps-muted);
+  font-size: 17px;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+/* ───────── Body: vertical spine → steps → transition ───────── */
+
+.ns-body {
+  position: relative;
+  z-index: var(--next-steps-z-content);
+  margin-top: 40px;
+  padding-left: var(--ns-pad);
+}
+
+.ns-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 2px;
+}
+
+.ns-spine::before,
+.ns-spine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+}
+
+.ns-spine::before {
+  background: rgb(44 226 245 / 22%);
+}
+
+.ns-spine::after {
+  background: var(--next-steps-route);
+  box-shadow: 0 0 12px rgb(44 226 245 / 45%);
+  transform: scaleY(var(--rp));
+  transform-origin: 50% 0;
+}
+
+.ns-feeders {
+  width: 96px;
+  max-width: none;
+  height: 40px;
+  margin: 0 0 0 calc(-1 * var(--ns-pad) + 11px);
+  overflow: visible;
+}
+
+.ns-feeders__track {
+  fill: none;
+  stroke: rgb(44 226 245 / 70%);
+  stroke-width: 2;
+}
+
+.ns-feeders__dot {
+  fill: var(--next-steps-signal);
+}
+
+.ns-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: ns-step;
+}
+
+.ns-step {
+  position: relative;
+  margin: 34px 0 0;
+  counter-increment: ns-step;
+}
+
+.ns-step:first-child {
+  margin-top: 8px;
+}
+
+.ns-step__n {
+  display: block;
+  color: var(--next-steps-route);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 18px;
+}
+
+.ns-step__n::before {
+  content: counter(ns-step, decimal-leading-zero);
+}
+
+.ns-step__label {
+  margin: 6px 0 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.ns-step__desc {
+  margin: 8px 0 0;
+  color: var(--next-steps-muted);
+  font-size: 16px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.ns-sla {
+  margin: 16px 0 0;
+  color: var(--next-steps-signal);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.ns-sla__rule {
+  display: block;
+  width: min(100%, 220px);
+  height: 2px;
+  margin-bottom: 10px;
+  background: var(--next-steps-signal);
+}
+
+.ns-transition {
+  margin: 40px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgb(174 203 208 / 28%);
+  color: var(--next-steps-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Vertical nodes: one per step on the spine axis. */
+.ns-step::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: calc(-1 * var(--ns-pad) + 5px);
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--next-steps-signal);
+  border-radius: 50%;
+  background: var(--next-steps-signal);
+  box-shadow:
+    0 0 0 4px var(--next-steps-surface-deep),
+    0 0 14px rgb(255 255 0 / 30%);
+}
+
+/* Vertical clarification branch: a short stub into the gutter ending at the response point. */
+.ns-step[data-step='manager-clarification']::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: calc(-1 * var(--ns-pad) + 17px);
+  width: 11px;
+  border-top: 2px solid rgb(174 203 208 / 85%);
+  transform-origin: 0 50%;
+}
+
+.ns-step[data-step='manager-clarification'] .ns-step__n::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: -13px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.ns-route {
+  display: none;
+}
+
+/* ───────── Tablet ───────── */
+
+@media (min-width: 768px) {
+  .next-steps__stage {
+    padding-block: 96px 88px;
+  }
+
+  .ns-title {
+    font-size: 44px;
+  }
+
+  .ns-reassurance {
+    font-size: 19px;
+  }
+
+  .ns-body {
+    --ns-pad: 48px;
+    max-width: 640px;
+    margin-top: 48px;
+  }
+
+  .ns-spine {
+    left: 14px;
+  }
+
+  .ns-feeders {
+    margin-left: calc(-1 * var(--ns-pad) + 15px);
+  }
+
+  .ns-step::before {
+    left: calc(-1 * var(--ns-pad) + 9px);
+  }
+
+  .ns-step[data-step='manager-clarification']::after {
+    left: calc(-1 * var(--ns-pad) + 21px);
+    width: 14px;
+  }
+
+  .ns-step[data-step='manager-clarification'] .ns-step__n::after {
+    left: -15px;
+  }
+
+  .ns-step__label {
+    font-size: 22px;
+  }
+
+  .ns-step__desc {
+    font-size: 17px;
+  }
+
+  .ns-sla,
+  .ns-transition {
+    font-size: 14px;
+  }
+}
+
+/* ───────── Low-height landscape ───────── */
+
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 1199px) {
+  .next-steps__stage {
+    padding-block: 48px;
+  }
+
+  .ns-step {
+    margin-top: 22px;
+  }
+
+  .ns-transition {
+    margin-top: 28px;
+  }
+}
+
+/* ───────── Desktop: one connected horizontal route ─────────
+   The stage is a 1672 × 941 canvas; everything is placed in % of it and text scales in cqw. */
+
+@media (min-width: 1200px) {
+  .next-steps__stage {
+    container-type: inline-size;
+    max-width: 1672px;
+    aspect-ratio: 1672 / 941;
+    padding: 0;
+  }
+
+  .ns-body,
+  .ns-steps {
+    display: contents;
+  }
+
+  .ns-spine,
+  .ns-feeders {
+    display: none;
+  }
+
+  .ns-head {
+    position: absolute;
+    top: 8.2%;
+    left: 6.58%;
+    width: 35%;
+    max-width: none;
+  }
+
+  .ns-eyebrow {
+    padding-top: 0.9cqw;
+    font-size: clamp(12px, 0.78cqw, 14px);
+  }
+
+  .ns-eyebrow::before {
+    top: 0;
+    width: 6.5%;
+    max-width: 56px;
+    min-width: 36px;
+  }
+
+  .ns-title {
+    margin-top: 0.8cqw;
+    font-size: clamp(36px, 3.6cqw, 60px);
+  }
+
+  .ns-reassurance {
+    max-width: 27cqw;
+    margin-top: 1.1cqw;
+    font-size: clamp(16px, 1.3cqw, 22px);
+  }
+
+  .ns-step,
+  .ns-step:first-child {
+    position: absolute;
+    margin: 0;
+    z-index: var(--next-steps-z-content);
+  }
+
+  .ns-step::before,
+  .ns-step::after,
+  .ns-step[data-step='manager-clarification'] .ns-step__n::after {
+    display: none;
+  }
+
+  .ns-step[data-step='available-context'] {
+    top: 31%;
+    left: 50.4%;
+    width: 24%;
+  }
+
+  .ns-step[data-step='manager-clarification'] {
+    top: 47.6%;
+    left: 59.8%;
+    width: 24.5%;
+  }
+
+  .ns-step[data-step='agreed-next-action'] {
+    top: 71.4%;
+    left: 32.3%;
+    width: 20.6%;
+  }
+
+  .ns-step__n {
+    font-size: clamp(11px, 0.78cqw, 14px);
+    line-height: 1.4;
+  }
+
+  .ns-step__label {
+    margin-top: 0.35cqw;
+    font-size: clamp(16px, 1.55cqw, 26px);
+    line-height: 1.14;
+  }
+
+  .ns-step__desc {
+    margin-top: 0.6cqw;
+    font-size: clamp(13px, 1.08cqw, 18px);
+    line-height: 1.42;
+  }
+
+  .ns-sla {
+    margin-top: 1.5cqw;
+    font-size: clamp(11px, 0.86cqw, 15px);
+  }
+
+  .ns-sla__rule {
+    width: 70%;
+    margin-bottom: 0.7cqw;
+  }
+
+  .ns-transition {
+    position: absolute;
+    top: 92.3%;
+    left: 74%;
+    z-index: var(--next-steps-z-content);
+    width: 18.5%;
+    margin: 0;
+    padding-top: 0.7cqw;
+    font-size: clamp(11px, 0.85cqw, 14px);
+  }
+
+  .ns-route {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: var(--next-steps-z-route);
+  }
+
+  /* Route geometry. Each segment is drawn by the scroll progress between --a and --a + --w. */
+  .ns-seg {
+    --seg: clamp(0, calc((var(--rp) - var(--a)) / var(--w)), 1);
+  }
+
+  .ns-track,
+  .ns-lit,
+  .ns-glow,
+  .ns-arrow {
+    fill: none;
+    stroke-linejoin: round;
+  }
+
+  .ns-track {
+    stroke: rgb(44 226 245 / 24%);
+    stroke-width: 2.5;
+  }
+
+  .ns-lit,
+  .ns-glow {
+    stroke: var(--next-steps-route);
+    stroke-dasharray: 100;
+    stroke-dashoffset: calc(100 * (1 - var(--seg)));
+  }
+
+  .ns-lit {
+    stroke-width: 4;
+  }
+
+  .ns-glow {
+    stroke-width: 15;
+    opacity: 0.16;
+  }
+
+  .ns-incoming-dot {
+    fill: var(--next-steps-signal);
+  }
+
+  .ns-branch .ns-lit {
+    stroke: rgb(174 203 208 / 90%);
+    stroke-width: 2.5;
+  }
+
+  .ns-arrow {
+    stroke: var(--next-steps-signal);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    opacity: calc(var(--seg, 1));
+  }
+
+  .ns-document {
+    fill: none;
+    stroke: rgb(174 203 208 / 60%);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .ns-response {
+    fill: #fff;
+  }
+
+  .ns-node {
+    z-index: var(--next-steps-z-marks);
+  }
+
+  .ns-node__halo {
+    fill: var(--next-steps-signal);
+    opacity: 0.14;
+  }
+
+  .ns-node__ring {
+    fill: var(--next-steps-surface-deep);
+    stroke: var(--next-steps-signal);
+    stroke-width: 3.5;
+  }
+
+  .ns-node__core {
+    fill: var(--next-steps-signal);
+  }
+}
+
+/* ───────── States (set by the script after successful initialisation) ───────── */
+
+/* Step text emphasis: never hidden, only 0.76 → 1. */
+.ns-step[data-state='inactive'] :is(.ns-step__n, .ns-step__label, .ns-step__desc, .ns-sla),
+.ns-step[data-state='inactive'] .ns-sla {
+  opacity: var(--next-steps-emphasis-opacity);
+}
+
+.ns-step[data-state='active'] :is(.ns-step__n, .ns-step__label, .ns-step__desc, .ns-sla) {
+  opacity: 0.9;
+}
+
+/* Vertical nodes */
+.next-steps[data-n1='inactive'] #next-steps-step-01::before,
+.next-steps[data-n2='inactive'] #next-steps-step-02::before,
+.next-steps[data-n3='inactive'] #next-steps-step-03::before {
+  border-color: rgb(174 203 208 / 45%);
+  background: var(--next-steps-surface-deep);
+  box-shadow: 0 0 0 4px var(--next-steps-surface-deep);
+}
+
+.next-steps[data-n1='active'] #next-steps-step-01::before,
+.next-steps[data-n2='active'] #next-steps-step-02::before,
+.next-steps[data-n3='active'] #next-steps-step-03::before {
+  box-shadow:
+    0 0 0 4px var(--next-steps-surface-deep),
+    0 0 22px rgb(255 255 0 / 55%);
+}
+
+/* Desktop nodes */
+.next-steps[data-n1='inactive'] #next-steps-node-01 :is(.ns-node__core, .ns-node__ring),
+.next-steps[data-n2='inactive'] #next-steps-node-02 :is(.ns-node__core, .ns-node__ring),
+.next-steps[data-n3='inactive'] #next-steps-node-03 :is(.ns-node__core, .ns-node__ring) {
+  fill: rgb(174 203 208 / 45%);
+  stroke: rgb(174 203 208 / 45%);
+}
+
+.next-steps[data-n1='inactive'] #next-steps-node-01 .ns-node__ring,
+.next-steps[data-n2='inactive'] #next-steps-node-02 .ns-node__ring,
+.next-steps[data-n3='inactive'] #next-steps-node-03 .ns-node__ring {
+  fill: var(--next-steps-surface-deep);
+}
+
+.next-steps[data-n1='inactive'] #next-steps-node-01 .ns-node__halo,
+.next-steps[data-n2='inactive'] #next-steps-node-02 .ns-node__halo,
+.next-steps[data-n3='inactive'] #next-steps-node-03 .ns-node__halo {
+  opacity: 0;
+}
+
+.next-steps[data-n1='active'] #next-steps-node-01 .ns-node__halo,
+.next-steps[data-n2='active'] #next-steps-node-02 .ns-node__halo,
+.next-steps[data-n3='active'] #next-steps-node-03 .ns-node__halo {
+  opacity: 0.36;
+}
+
+/* Context contour: clearer once Step 01 is reached. */
+.next-steps[data-n1='inactive'] .ns-document {
+  opacity: 0.35;
+}
+
+.next-steps[data-n1='active'] .ns-document {
+  opacity: 0.7;
+}
+
+/* Clarification branch + response point + SLA accent. */
+.next-steps[data-branch='inactive'] .ns-step[data-step='manager-clarification']::after {
+  opacity: 0;
+}
+
+.next-steps[data-branch='inactive'] .ns-step[data-step='manager-clarification'] .ns-step__n::after,
+.next-steps[data-branch='drawing'] .ns-step[data-step='manager-clarification'] .ns-step__n::after,
+.next-steps[data-branch='inactive'] .ns-response,
+.next-steps[data-branch='drawing'] .ns-response {
+  opacity: 0;
+}
+
+.next-steps[data-sla='inactive'] .ns-sla__rule {
+  opacity: 0.35;
+}
+
+.next-steps[data-sla='inactive'] .ns-sla {
+  color: rgb(255 255 0 / 62%);
+}
+
+/* Exit corridor stays quiet until it is reached. */
+.next-steps[data-exit='inactive'] .ns-transition {
+  opacity: 0.76;
+}
+
+/* ───────── Motion: short state transitions only (scroll scrubs the routes) ───────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .next-steps[data-enhanced] :is(.ns-step__n, .ns-step__label, .ns-step__desc, .ns-sla, .ns-sla__rule, .ns-transition, .ns-document, .ns-response) {
+    transition:
+      opacity var(--next-steps-local-duration) var(--next-steps-ease),
+      color var(--next-steps-local-duration) var(--next-steps-ease);
+  }
+
+  .next-steps[data-enhanced] :is(.ns-node__core, .ns-node__ring, .ns-node__halo) {
+    transition:
+      opacity var(--next-steps-node-duration) var(--next-steps-ease),
+      fill var(--next-steps-node-duration) var(--next-steps-ease),
+      stroke var(--next-steps-node-duration) var(--next-steps-ease);
+  }
+
+  .next-steps[data-enhanced] .ns-step::before,
+  .next-steps[data-enhanced] .ns-step::after,
+  .next-steps[data-enhanced] .ns-step[data-step='manager-clarification'] .ns-step__n::after {
+    transition:
+      opacity var(--next-steps-node-duration) var(--next-steps-ease),
+      background-color var(--next-steps-node-duration) var(--next-steps-ease),
+      border-color var(--next-steps-node-duration) var(--next-steps-ease),
+      box-shadow var(--next-steps-local-duration) var(--next-steps-ease);
+  }
+}
+
+/* Reduced motion: always the assembled scene, no transitions or glow. */
+@media (prefers-reduced-motion: reduce) {
+  .next-steps {
+    --rp: 1 !important;
+    --next-steps-local-duration: 0ms;
+    --next-steps-node-duration: 0ms;
+  }
+
+  .ns-spine::after,
+  .ns-step::before {
+    box-shadow: none !important;
+  }
+
+  .ns-glow {
+    display: none;
+  }
+}
+
+/* Transition label is a real anchor to Block 07 (#shipment-form). */
+.ns-transition__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ns-transition__link:hover {
+  color: var(--next-steps-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

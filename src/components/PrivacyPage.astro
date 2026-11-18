@@ -1,0 +1,36 @@
+---
+import { privacyContent } from '../i18n/privacy';
+import { homePath, type Locale } from '../i18n/routes';
+import '../styles/privacy.css';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = privacyContent[locale];
+---
+
+<article class="privacy" aria-labelledby="privacy-title" data-content-status="draft_for_owner_legal_review">
+  <div class="privacy__inner">
+    <p class="privacy__draft">{t.draftNote}</p>
+    <h1 id="privacy-title">{t.title}</h1>
+    <p class="privacy__intro">{t.intro}</p>
+    {
+      t.sections.map((s) => (
+        <section>
+          <h2>{s.heading}</h2>
+          {s.paragraphs?.map((p) => <p>{p}</p>)}
+          {s.items && (
+            <ul>
+              {s.items.map((i) => (
+                <li>{i}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))
+    }
+    <p class="privacy__back"><a href={`${homePath[locale]}#shipment-form`}>{t.back}</a></p>
+  </div>
+</article>
